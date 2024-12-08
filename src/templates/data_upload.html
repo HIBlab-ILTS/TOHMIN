@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center mb-4">
+  <h1 >Hibernation Analysis Program</h1>
+  <p>
+    Please upload original data as folder or file.<br>
+    You will choose data which analysed hibernation in upload original data.
+  </p>
+</div>
+<div class="card text-bg-light p-4 mt-3">
+  <form class="row m-5 needs-validation" method="POST" action="/visualization" enctype="multipart/form-data" novalidate>
+    <div class="col-sm-12">
+      <label for="uploadValidation" class="form-label">Test data</label>
+      <input class="form-control" id="uploadValidation" type="file" name="data_csv" accept=".csv" multiple required>
+      <div class="invalid-feedback">
+        You must upload one or more csvfile data.
+        {{msg}}
+      </div>
+    </div>
+    <div class="col-sm-12 p-4 text-center">
+      <button class="btn btn-secondary" type="submit">Send</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

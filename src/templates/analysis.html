@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center mb-4">
+  <h1>Hibernation Analysis Program</h1>
+  <p>
+    Here are the analysis results based on the parameters.<br>
+    The graph shows hibernation data color-coded by event type, along with the frequency of occurrence for each target event in the hibernation data.<br>
+    You can download analysis results for individual files using the download buttons next to each filename, or download analysis results for all files using the download button at the bottom of the page.
+  </p>
+</div>
+<div class="card text-bg-light p-4 mt-3">
+  <form method="POST" action="/delete">
+    {% for file_name, peak_set in summary.items() %}
+      <div class="row mb-3">
+        <div class="col-md-8 fs-4">  
+          <h3>{{ file_name }}</h3>
+        </div>
+        <div class="col-md-4 fs-4 text-end">
+          <a href="/downloads/{{ file_name }}" download>
+            <img src="/static/icons/download.svg" width="25" height="25" alt="Download">
+          </a>
+        </div>
+      </div>
+      <hr>
+      <div class="mb-3">
+        {{ divs[file_name] | safe }}
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="table-primary">
+            <tr>
+              <th>Event Name</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pre-Hibernation</td>
+              <td>{{ peak_set.prehib }}</td>
+            </tr>
+            <tr>
+              <td>Periodic Arousal</td>
+              <td>{{ peak_set.PA }}</td>
+            </tr>
+            <tr>
+              <td>Shallow Torpor</td>
+              <td>{{ peak_set.ST }}</td>
+            </tr>
+            <tr>
+              <td>Deep Torpor</td>
+              <td>{{ peak_set.DT }}</td>
+            </tr>
+            <tr>
+              <td>Arousal Pending</td>
+              <td>{{ peak_set.AP }}</td>
+            </tr>
+            <tr>
+              <td>Cooling</td>
+              <td>{{ peak_set.Cooling }}</td>
+            </tr>
+            <tr>
+              <td>Rewarming</td>
+              <td>{{ peak_set.Rewarming }}</td>
+            </tr>
+            <tr>
+              <td>Post-Hibernation</td>
+              <td>{{ peak_set.posthib }}</td>
+            </tr>
+            <tr>
+              <td>Low Temperature of body </td>
+              <td>{{ peak_set.low_Tb }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+    <div class="text-center">
+      <a class="btn btn-danger" role="button" href="/parameter_upload">Retry</a>
+      <button type="submit" class="btn btn-secondary mr-2"> Back to Top</button>
+      <a class="btn btn-primary" role="button" href="/downloads">Download</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

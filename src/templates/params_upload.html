@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center mb-4">
+  <h1>Hibernation Analysis Program</h1>
+  <p>
+    If you set parameters with csv, you need to download csv format file.<br>
+    You should check instruction page, if you need to explain each parameters.<br>
+    Please set parameters for <a href="/parameter_input">this form</a> if you input each parameters directly.<br>
+    You can be downloaded from here: <a href="{{ url_for('static', filename='parameters_format.csv') }}" download="parameters_format.csv">download csv format</a>
+  </p>
+</div>
+<div class="card text-bg-light p-4 mt-3">
+  <div class="card-body">
+    <h5 class="card-title">Usage Data</h5>
+    <ul class="list-group list-group-flush mb-4">
+      {% for filename in files %}
+        <li class="list-group-item">{{filename}}</li>
+      {% endfor %}
+    </ul>
+    <form class="row g-3" method="post" id="params_preview" action="/parameter_upload/preview" enctype="multipart/form-data">
+      <div class="col-sm-12">
+        <label for="csv_format" class="col-form-label">
+          CSV File<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="file" id="params_csv" name="params_csv" accept=".csv">
+      </div>
+      <button style="visibility: hidden;" type="submit"></button>
+      <div style="overflow-y: auto; max-height: 400px;">
+        {% if header %}
+        <table class="table table-hover">
+          <thead class="table-primary">
+            <tr>
+              {% for row in header %}
+                <th>{{row}}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+        {% endif %}
+        {% if table %}
+          <tbody>
+            {% for rows in table %}
+            <tr>
+              {% for row in rows %}
+                <th>{{row}}</th>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+    </form>
+    <form class="row g-3 needs-validation" method="post" action="/analyze" enctype="multipart/form-data" novalidate>
+      <div class="col-md-6">
+        <div class="col-mb-3">
+          <label for="folder_name" class="col-form-label" data-toggle="tooltip" title="Formatted CSV of individual parameters.">
+            Saved Folder Name<span class="text-danger">*</span>
+          </label>
+          <input class="form-control" type="text" id="folder_name" name="folder_name" value="result_analysis" required>
+          <div class="invalid-feedback">
+            Enter valid value.
+          </div>
+        </div>
+      </div>
+      {% if msg %}
+      <div class="alert alert-danger mt-3" role="alert">
+        {{msg}}
+      </div>
+      {% endif %}
+      <div class="col-sm-12 text-center">
+        <button class="btn btn-secondary" type="submit">Send</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

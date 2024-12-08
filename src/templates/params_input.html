@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+<div  class="text-center mb-4">
+  <h1>Hibernation Analysis Program</h1>
+  <p>If you set parameters with csv, you need to upload csv format from <a href="/parameter_upload">this form</a>.</p>
+</div>
+<div class="card text-bg-light p-4 mt-3">
+  <h5 class="card-title">Usage Data</h5>
+  <ul class="list-group list-group-flush mb-4">
+    {% for filename in files %}
+      <li class="list-group-item">{{filename}}</li>
+    {% endfor %}
+  </ul>
+  <form class="row g-3 needs-validation" method="POST" action="/analyze" novalidate>
+    <div class="col-md-6">
+      <div class="col-mb-3 p-1">
+        <label for="id" class="form-label" data-toggle="tooltip" data-placement="right" title="The Unique identifier used for output file names (no duplicates allowed).">
+          ID <span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="text" id="id" name="param" maxlength="20" required>
+        <div class="invalid-feedback">
+          Enter letters and numbers only. For example, m1123.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="group" class="form-label" data-toggle="tooltip" data-placement="right" title="Specifies the experimental or control group designation.">
+          Group <span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="text" id="group" name="param" maxlength="20" required>
+        <div class="invalid-feedback">
+          Enter letters and numbers only. For example, male.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="prehib_start_time" class="form-label" data-toggle="tooltip" data-placement="right" title="The start datetime of pre-hibernation period analysis.">
+          Prehib Start Time <span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="datetime-local" id="prehib_start_time" name="param" required>
+        <div class="invalid-feedback">
+          Enter valid value.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="hib_end_time" class="form-label" data-toggle="tooltip" data-placement="right" title="The end datetime of hibernation (auto-determined if not specified).">
+          Hib End Time
+        </label>
+        <input class="form-control" type="datetime-local" id="hib_end_time" name="param">
+        <div class="invalid-feedback">
+          Enter valid value.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="exclusion_start_time" class="form-label" data-toggle="tooltip" data-placement="right" title="The start time of data exclusion period.">
+          Exclusion Start Time
+        </label>
+        <input class="form-control" type="datetime-local" id="exclusion_start_time" name="param">
+        <div class="invalid-feedback">
+          Enter valid value.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="exclusion_end_time" class="form-label" data-toggle="tooltip" data-placement="right" title="The end time of data exclusion period.">
+          Exclusion End Time
+        </label>
+        <input class="form-control" type="datetime-local" id="exclusion_end_time" name="param">
+        <div class="invalid-feedback">
+          Enter valid value.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="folder_name" class="form-label" data-toggle="tooltip" data-placement="right" title="The name of the folder where results will be saved.">
+          Saved Folder Name<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="text" id="folder_name" name="folder_name" value="result_analysis" required>
+        <div class="invalid-feedback">
+          Enter valid value.
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="col-mb-3 p-1">
+        <label for="hib_start_tmp" class="form-label" data-toggle="tooltip" data-placement="right" title="The Tb threshold for hibernation onset detection.">
+          Hib Start Tempurature<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="hib_start_tmp" name="param" value="33" min="-10" max="50" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="upper_threshold" class="form-label" data-toggle="tooltip" data-placement="right" title="The Tb threshold for detecting normothermia.">
+          Upper Threshold<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="upper_threshold" name="param" value="33" min="-10" max="50" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="lower_threshold" class="form-label" data-toggle="tooltip" data-placement="right" title="The Tb threshold for detecting deep torpor.">
+          Lower Threshold<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="lower_threshold" name="param" value="10" min="-10" max="50" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="prehib_low_tb_threshold" class="form-label" data-toggle="tooltip" data-placement="right" title="The Tb threshold for low Tb events during pre-hibernation period.">
+          Prehib Low Tb Threshold<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="prehib_low_tb_threshold" name="param" value="34" min="-10" max="50" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="hib_start_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Duration threshold for confirming hibernation onset.">
+          Hib Start Discrimination [min]<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="hib_start_discrimination" name="param" value="30" min="120" max="7200" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="hib_end_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Duration criteria for determining spontaneous end of hibernation.">
+          Hib End Discrimination [min]<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="hib_end_discrimination" name="param" value={{interval}} min="20160" max="43200" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="dead_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Duration threshold for date of death determination.">
+          Dead Discrimination [min]<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="dead_discrimination" name="param" value={{interval}} min="10080" max="43200" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
+        <label for="pa_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Time threshold for reclassifying short-term low Tb events as periodic arousal.">
+          PA Discrimination [min]<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="pa_discrimination" name="param" value={{interval}} min={{interval}} max="360" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-12 text-center">
+      <button class="btn btn-secondary" type="submit">Send</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
