@@ -76,6 +76,7 @@ Please proceed with the following steps after completing all the preliminary pre
     Move to the directory where the Dockerfile is located and execute the following command.
 
     ```
+    # Execute only once
     docker build -t src .
     docker run -p 8080:8000 src
     ```
@@ -154,6 +155,7 @@ Please proceed with the following steps after completing all the preliminary pre
 
     ```
     poetry shell
+    cd src
     python app.py
     ```
 
