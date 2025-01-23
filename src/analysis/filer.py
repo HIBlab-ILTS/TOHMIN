@@ -158,7 +158,6 @@ def data_format(files: list) -> tuple:
     return data, errors
 
 
-# arrange the ALCO data format
 def data_format_for_arco(file):
     """
     Processes data specifically for the ARCO data logger format, cleaning 
@@ -187,7 +186,6 @@ def data_format_for_arco(file):
     )
 
 
-# convert from str type to datetime.Timestamp type
 def convert_datetime(param_dt: str) -> str:
     """
     Convert datetime string to datetime.Timestamp type.
@@ -236,7 +234,6 @@ def convert_datetime(param_dt: str) -> str:
         print(e)
 
 
-# check that folder name exists in current directory, creating unique directory
 def create_unique_dir(unique_name: str) -> Union[str, str]:
     """
     Creates a unique directory for storing analysis results.
@@ -276,7 +273,6 @@ def create_specific_dir(dir_path: str, file_name: str) -> str:
     return csvfile_name_path
 
 
-# export the analyzed data to csv file
 def save_artifacts(folder_path: str, file: str, results: dict) -> None:
     """
     Saves the analysis results to two CSV files: one for the processed data
@@ -369,7 +365,6 @@ def save_artifacts(folder_path: str, file: str, results: dict) -> None:
     print(f"Successfully. 'hib_proc_{id_name}.csv' was created.")
 
 
-# save uploaded data file to local
 def save_files(files: list, target: str) -> list:
     """
     Saves uploaded data and parameter files to local directories.
@@ -388,7 +383,6 @@ def save_files(files: list, target: str) -> list:
     return file_names
 
 
-# output the results of hibernation analysis
 def output(results: dict) -> dict:
     """
     Prints a summary of the hibernation analysis results to the console.
@@ -412,7 +406,38 @@ def output(results: dict) -> dict:
     return display_set
 
 
-# read parameters fot uploaded csv format
+def pick_up_parameter(files: list, params: list) -> dict:
+    """
+    Constructs a dictionary of parameters for each file in the input list.
+
+    Args:
+        files (list): A list of file names.
+        params (list): A list of parameter values corresponding to the inputed patrameters.
+    Returns:
+        dict: A dictionary where keys are file names and values are dictionaries of parameters.
+    """
+    param_set = {
+        "ID": params[0],
+        "group": params[1],
+        "prehib_start_time": params[2],
+        "hib_end_time": np.nan if params[3] == '' else params[3],
+        "hib_start_tmp": params[6],
+        "upper_threshold": params[7],
+        "lower_threshold": params[8],
+        "prehib_low_Tb_threshold": params[9],
+        "hib_start_discrimination": params[10],
+        "hib_end_discrimination": params[11],
+        "dead_discrimination": params[12],
+        "pa_discrimination": params[13],
+        "exclusion_start_time": np.nan if params[4] == '' else params[4],
+        "exclusion_end_time": np.nan if params[5] == '' else params[5]
+    }
+    parameters_dict = {}
+    for file in files:
+        parameters_dict |= {file: param_set}
+    return parameters_dict
+
+
 def read_parameters() -> dict:
     """
     Reads parameters from a CSV file and performs validation checks.
@@ -460,7 +485,6 @@ def read_parameters() -> dict:
     return df.to_dict("index")
 
 
-# save figure of uploaded file
 def save_figures(data_list: list) -> None:
     """
     Saves figures of the raw temperature data as SVG files.
@@ -479,7 +503,6 @@ def save_figures(data_list: list) -> None:
         )
 
 
-# display figure of uploaded file
 def fig_list(files: list) -> dict:
     """
     Creates a dictionary of file names and their corresponding SVG figure paths.

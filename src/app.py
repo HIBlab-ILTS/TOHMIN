@@ -74,6 +74,7 @@ def visualization():
 # Input parameters page for only
 @app.route("/parameter_input", methods=["GET", "POST"])
 def input_params():
+    session["form_tag"] = "input"
     files = session.get("files", [])
     if len(set(session["attrs"].values())) == 1:
         attr = set(session["attrs"].values())
@@ -85,6 +86,7 @@ def input_params():
 # Input parameters page for csv format
 @app.route("/parameter_upload", methods=["GET", "POST"])
 def input_csv():
+    session["form_tag"] = "upload"
     files = session.get("files", [])
     return render_template("params_upload.html", files=files)
 
@@ -110,11 +112,10 @@ def analysis():
 
     try:
         if request.form.getlist("param"):
-            parameters_dict = filer.pick_up_parameter(request.form.getlist("param"))
+            parameters_dict = filer.pick_up_parameter(files, request.form.getlist("param"))
         else:
             parameters_dict = filer.read_parameters()
-        event_set = {}
-        div_set = {}
+        event_set, div_set = {}, {}
         for file in files:
             if file in parameters_dict.keys():
                 peaks = categorizer.analyze(parameters_dict[file], data[file])
@@ -125,11 +126,11 @@ def analysis():
     except (AttributeError ,TypeError):
         import traceback
         print(traceback.format_exc())
-        return render_template("params_upload.html", files=files, msg="Select a valid parameter file.")
+        return render_template(f"params_{session['form_tag']}.html", files=files, msg="Select a valid parameter file.")
     except Exception as e:
         import traceback
         print(traceback.format_exc())
-        return render_template("params_upload.html", files=files, msg=f"Error detected.: {str(e)}")
+        return render_template(f"params_{session['form_tag']}.html", files=files, msg=f"Error detected.: {str(e)}")
 
 
 @app.route("/downloads", methods=["GET", "POST"])
