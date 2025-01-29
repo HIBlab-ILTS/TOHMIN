@@ -87,7 +87,8 @@ def visualization():
 @app.route("/parameter_input", methods=["GET", "POST"])
 def input_params():
     session["form_tag"] = "input"
-    session["files"] = request.form.getlist("file_name")
+    if request.form.getlist("file_name"):
+        session["files"] = request.form.getlist("file_name")
     if len(set(session["attrs"].values())) == 1:
         attr = list(set(session["attrs"].values()))[0]
     else:
@@ -103,7 +104,8 @@ def input_params():
 @app.route("/parameter_upload", methods=["GET", "POST"])
 def input_csv():
     session["form_tag"] = "upload"
-    session["files"] = request.form.getlist("file_name")
+    if request.form.getlist("file_name"):
+        session["files"] = request.form.getlist("file_name")
     return render_template("params_upload.html", files=session.get("files", []))
 
 # Preview parameters page
@@ -126,6 +128,7 @@ def preview_params():
             msg=tables
         )
 
+
 # Analyze data page
 @app.route("/analyze", methods=["GET", "POST"])
 def analysis():
@@ -134,7 +137,6 @@ def analysis():
     session["folder_name"], folder_path = filer.create_unique_dir(
         request.form.get("folder_name")
     )
-
     try:
         if request.form.getlist("param"):
             parameters_dict = filer.pick_up_parameter(

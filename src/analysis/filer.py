@@ -679,7 +679,12 @@ def plot_coloring_events(
                     showlegend=False,
                 )
             )
-    fig.update_layout(xaxis_title="Datetime", yaxis_title="body_tmp")
+    fig.update_layout(
+        xaxis_title="Datetime",
+        xaxis=dict(showgrid=False),
+        yaxis_title="body_tmp",
+        yaxis=dict(showgrid=False)
+    )
 
     fig.write_image(
         os.path.join(dir_path, f"{file_name.replace('.csv', '.svg')}"),
