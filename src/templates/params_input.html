@@ -118,7 +118,7 @@
         <label for="hib_start_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Duration threshold for confirming hibernation onset.">
           Hib Start Discrimination [min]<span class="text-danger">*</span>
         </label>
-        <input class="form-control" type="number" id="hib_start_discrimination" name="param" value="30" min="120" max="7200" required>
+        <input class="form-control" type="number" id="hib_start_discrimination" name="param" value={{interval}} min={{interval}} max="7200" required>
         <div class="invalid-feedback">
           Enter numbers only.
         </div>
@@ -127,7 +127,7 @@
         <label for="hib_end_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Duration criteria for determining spontaneous end of hibernation.">
           Hib End Discrimination [min]<span class="text-danger">*</span>
         </label>
-        <input class="form-control" type="number" id="hib_end_discrimination" name="param" value={{interval}} min="20160" max="43200" required>
+        <input class="form-control" type="number" id="hib_end_discrimination" name="param" value="20160" min={{interval}} max="43200" required>
         <div class="invalid-feedback">
           Enter numbers only.
         </div>
@@ -136,7 +136,7 @@
         <label for="dead_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Duration threshold for date of death determination.">
           Dead Discrimination [min]<span class="text-danger">*</span>
         </label>
-        <input class="form-control" type="number" id="dead_discrimination" name="param" value={{interval}} min="10080" max="43200" required>
+        <input class="form-control" type="number" id="dead_discrimination" name="param" value="10080" min={{interval}} max="43200" required>
         <div class="invalid-feedback">
           Enter numbers only.
         </div>

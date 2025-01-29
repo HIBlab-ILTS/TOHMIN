@@ -493,8 +493,19 @@ def save_figures(data_list: list) -> None:
         data_list (list): A list of dictionaries containing raw temperature data.
     """
     for file_name, data in data_list.items():
-        fig = go.Figure(go.Scatter(x=data["Date/Time"], y=data["Value"], mode="lines"))
-        fig.update_layout(xaxis_title="Datetime", yaxis_title="body_tmp")
+        fig = go.Figure(
+            go.Scatter(
+                x=data["Date/Time"],
+                y=data["Value"],
+                mode="lines"
+            )
+        )
+        fig.update_layout(
+            xaxis_title="Datetime",
+            xaxis=dict(showgrid=False),
+            yaxis_title="body_tmp",
+            yaxis=dict(showgrid=False)
+        )
         fig.write_image(
             os.path.join(FIGS_DIR_PATH, f"{file_name.replace('.csv', '.svg')}")
         )

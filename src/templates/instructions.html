@@ -110,7 +110,7 @@
               <td>Time threshold for determining hibernation onset.<br>When Tb remains below upper_threshold for longer than this specified duration, the program classifies it as the hibernation onset rather than temporal low Tb event.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>120-7200</td>
+              <td>interval-7200</td>
               <td>interval</td>
               <td>min</td>
             </tr>
@@ -119,8 +119,8 @@
               <td>Specifes time interval (minutes) for determining the spontaneous end of hibernation( post-hibernation period).<br>The program identifies the first point of a period where Tb consistently stays above upper_threshold, with temporary drops below upper_threshold allowed if they are shorter than the specified interval.<br>When these conditions are met, the program marks the first point of this period as the end of hibernation.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>20160-43200</td>
-              <td>interval</td>
+              <td>interval-43200</td>
+              <td>20160</td>
               <td>min</td>
             </tr>
             <tr>
@@ -128,8 +128,8 @@
               <td>Time criterion for mortality determination.<br>When Tb remains below lower_threshold for the specified duration, the program determines mortality has occurred.<br>The time of death is set to the first instance when the lowest Tb was recorded during this period.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>10080-43200</td>
-              <td>interval</td>
+              <td>interval-43200</td>
+              <td>10080</td>
               <td>min</td>
             </tr>
             <tr>
@@ -137,7 +137,7 @@
               <td>Time criterion threshold for consolidating separated periodic arousal (PA) episodes into a single event, preventing false torpor classifications from minor body temperature fluctuations.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>0-360</td>
+              <td>interval-360</td>
               <td>interval</td>
               <td>min</td>
             </tr>
