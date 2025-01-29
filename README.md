@@ -41,10 +41,12 @@ Please proceed with the following steps after completing all the preliminary pre
 
     When you clone the repository, a folder with the repository name (here, TOHMIN) will be created.
 
-    ```
-    # sample (Set the location where you want to place it if necessary.)
-    cd ~ && mkdir TOHMIN && cd TOHMIN
-    ```
+    - Set the location where you want to place it if necessary. You need to change a something.
+
+        ```
+        # example
+        cd ~ && mkdir something && cd something
+        ```
     
     Cloning will create the same folder structure as the repository.
 
@@ -77,6 +79,7 @@ Please proceed with the following steps after completing all the preliminary pre
 
     ```
     # Execute only once
+    cd TOHMIN
     docker build -t src .
     docker run -p 8080:8000 src
     ```
