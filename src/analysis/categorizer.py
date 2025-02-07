@@ -118,7 +118,27 @@ def _get_end_time(time: list, hib_end_time: np.datetime64) -> np.datetime64:
         raise ValueError("Not found end time.")
 
 
-def _is_hib_start(tmp: list, current_index: int, params: dict) -> bool:
+def _modify_discrimination_to_interval(interval: int, params: dict) -> dict:
+    """
+    Modifies the discrimination parameter to the interval specified in the input 
+    dictionary.
+
+    Args:
+        interval (int): The time interval.
+        params (dict): The input dictionary containing the discrimination parameter.
+    Returns:
+        dict: The modified dictionary.
+    """
+    for name, val in params:
+        if "discrimination" in name:
+            params[name] = int(val / interval)
+    return params
+
+
+def _is_hib_start(
+        tmp: list,
+        current_index: int,
+        params: dict) -> bool:
     """
     Receives temperature data, the current index, time interval, and parameters, 
     returning a boolean value indicating whether the hibernation start condition
@@ -127,6 +147,7 @@ def _is_hib_start(tmp: list, current_index: int, params: dict) -> bool:
     Args:
         tmp (list): The temperature data.
         current_index (int): The current index.
+        interval (int): The time interval.
         params (dict): The parameters.
     Returns:
         bool: True if the hibernation start condition is met, False otherwise.
@@ -313,6 +334,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
     """
     results = _structured()
     interval = _get_interval(time)
+    params = _modify_discrimination_to_interval(interval, params)
     results |= {
         "interval": interval,
         "ID": params["id"],
