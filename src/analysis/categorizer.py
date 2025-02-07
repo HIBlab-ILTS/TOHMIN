@@ -129,7 +129,7 @@ def _modify_discrimination_to_interval(interval: int, params: dict) -> dict:
     Returns:
         dict: The modified dictionary.
     """
-    for name, val in params:
+    for name, val in params.items():
         if "discrimination" in name:
             params[name] = int(val / interval)
     return params
