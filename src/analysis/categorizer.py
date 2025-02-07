@@ -94,6 +94,8 @@ def _get_start_time(time: list, prehib_start_time: np.datetime64) -> np.datetime
     """
     for i in range(len(time)):
         if time[i] > prehib_start_time:
+            if i == 0:
+                return time[i]
             return time[i - 1]
     else:
         raise ValueError("Not found start time.")
