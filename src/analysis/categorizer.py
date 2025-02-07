@@ -559,6 +559,7 @@ def analyze(param_list: list, data: pd.DataFrame) -> dict:
     params = _data_set(param_list)
     res = _peak_counts(tmp, time, params)
     res = modify_pa(res, params["pa_discrimination"])
-    res = get_low_tb_events(res, params["prehib_low_Tb_threshold"])
+    if res["tmp"]["prehib"] and res["tmp"]["prehib"]:
+        res = get_low_tb_events(res, params["prehib_low_Tb_threshold"])
 
     return res
