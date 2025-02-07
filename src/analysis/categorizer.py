@@ -334,7 +334,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
     """
     results = _structured()
     interval = _get_interval(time)
-    params = _modify_discrimination_to_interval(interval, params)
+    params = _modify_discrimination_to_interval(interval["minutes"], params)
     results |= {
         "interval": interval,
         "ID": params["id"],
