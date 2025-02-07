@@ -131,7 +131,7 @@ def _modify_discrimination_to_interval(interval: int, params: dict) -> dict:
     """
     for name, val in params.items():
         if "discrimination" in name:
-            params[name] = int(val / interval)
+            params[name] = np.int32(val / interval)
     return params
 
 
