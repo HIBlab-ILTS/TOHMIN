@@ -72,5 +72,15 @@
       })
     })()
   </script>
+  <script>
+    function startTransition() {
+      const loading = document.getElementById('loading');
+      loading.style.display = 'flex';
+      
+      setTimeout(() => {
+        window.location.href = '/next-page';
+      }, 2000);
+    }
+  </script>
 </body>
 </html>

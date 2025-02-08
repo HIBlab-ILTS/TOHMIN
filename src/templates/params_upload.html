@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
+<div id="loading">
+  <div class="spinner"></div>
+</div>
 <div class="text-center mb-4">
   <h1>Hibernation Analysis Program</h1>
   <p>
@@ -68,7 +71,7 @@
       </div>
       {% endif %}
       <div class="col-sm-12 text-center">
-        <button class="btn btn-secondary" type="submit">Send</button>
+        <button class="btn btn-secondary" onclick="startTransition()" type="submit">Send</button>
       </div>
     </form>
   </div>
