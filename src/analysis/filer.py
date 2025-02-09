@@ -538,7 +538,6 @@ def validate_values(param_df: pd.DataFrame, headers: set, attr: dict) -> None:
     Raises:
         ValueError: If essential parameters are empty.
     """
-    print(param_df, headers, attr)
     # if essential parameter was empty
     non_required = {
         'group',
