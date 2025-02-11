@@ -41,20 +41,21 @@
     });
   </script>
   <script>
-    const form = document.getElementById('params_preview');
-    const fileInput = document.getElementById('params_csv');
+    const previewForm = document.getElementById('params_preview');
+    if (previewForm) {
+      const fileInput = document.getElementById('params_csv');
+      fileInput.addEventListener('change', () => {
+        previewForm.submit();
+      });
+    }    
     
-    fileInput.addEventListener('change', () => {
-      form.submit();
-    });
-  </script>
-  <script>
     const hibStartTmp = document.getElementById('hib_start_tmp');
-    const prehibLowTbThreshold = document.getElementById('prehib_low_tb_threshold');
-
-    hibStartTmp.addEventListener('input', () => {
-      prehibLowTbThreshold.min = hibStartTmp.value
-    });
+    if (hibStartTmp) {
+      const prehibLowTbThreshold = document.getElementById('prehib_low_tb_threshold');
+      hibStartTmp.addEventListener('input', () => {
+        prehibLowTbThreshold.min = hibStartTmp.value
+      });
+    }
   </script>
   <script>
     (() => {
@@ -66,20 +67,38 @@
             event.preventDefault()
             event.stopPropagation()
           }
-
           form.classList.add('was-validated')
         }, false)
       })
     })()
   </script>
   <script>
-    function startTransition() {
-      const loading = document.getElementById('loading');
-      loading.style.display = 'flex';
-      
-      setTimeout(() => {
-        window.location.href = '/next-page';
-      }, 2000);
+    async function asyncSubmit(nextPage) {
+      const loading = document.getElementById("loading");
+      loading.style.display = "flex";
+
+      const inputElements = document.querySelectorAll("#form-payload input");
+      const formData = new FormData();
+      inputElements.forEach((element) => {
+        if (element.type === "file") {
+          for (const file of element.files) {
+            formData.append(element.name, file);
+          }
+        } else {
+          formData.append(element.name, element.value);
+        }
+      });
+      const response = await fetch(nextPage, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const html = await response.text();
+        document.body.innerHTML = html;
+      } else{
+        loading.style.display = "none";
+      }
     }
   </script>
 </body>

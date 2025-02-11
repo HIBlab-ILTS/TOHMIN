@@ -53,7 +53,7 @@
         {% endif %}
       </div>
     </form>
-    <form class="row g-3 needs-validation" method="post" action="/analyze" enctype="multipart/form-data" novalidate>
+    <div class="row g-3 needs-validation" id="form-payload" novalidate>
       <div class="col-md-6">
         <div class="col-mb-3">
           <label for="folder_name" class="col-form-label" data-toggle="tooltip" title="Formatted CSV of individual parameters.">
@@ -71,9 +71,9 @@
       </div>
       {% endif %}
       <div class="col-sm-12 text-center">
-        <button class="btn btn-secondary" onclick="startTransition()" type="submit">Send</button>
+        <button class="btn btn-secondary" onclick="asyncSubmit('/analyze')">Send</button>
       </div>
-    </form>
+    </div>
   </div>
 </div>
 {% endblock %}

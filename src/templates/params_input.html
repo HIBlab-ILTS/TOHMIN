@@ -14,7 +14,7 @@
       <li class="list-group-item">{{filename}}</li>
     {% endfor %}
   </ul>
-  <form class="row g-3 needs-validation" method="POST" action="/analyze" novalidate>
+  <div class="row g-3 needs-validation" id="form-payload" novalidate>
     <div class="col-md-6">
       <div class="col-mb-3 p-1">
         <label for="id" class="form-label" data-toggle="tooltip" data-placement="right" title="The Unique identifier used for output file names (no duplicates allowed).">
@@ -160,8 +160,8 @@
     </div>
     {% endif %}
     <div class="col-sm-12 text-center">
-      <button class="btn btn-secondary" onclick="startTransition()" type="submit">Send</button>
+      <button class="btn btn-secondary" onclick="asyncSubmit('/analyze')">Send</button>
     </div>
-  </form>
+  </div>
 </div>
 {% endblock %}

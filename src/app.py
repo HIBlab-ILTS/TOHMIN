@@ -37,7 +37,10 @@ def uploads_page():
 # Data visualizetion page
 @app.route("/visualization", methods=["POST"])
 def visualization():
+    print("私は今でも、ここにいるよ")
     try:
+        # import IPython
+        # IPython.embed()
         files = filer.save_files(request.files.getlist("data_csv"), "DATA")
         session["files"] = files
         # create data format from the file
@@ -130,7 +133,7 @@ def preview_params():
 
 
 # Analyze data page
-@app.route("/analyze", methods=["GET", "POST"])
+@app.route("/analyze", methods=["POST"])
 def analysis():
     files = session.get("files", [])
     data, _ = filer.data_format(files)
@@ -183,7 +186,7 @@ def download_artifacts(file_name=None):
     return send_file(zip_file, as_attachment=True)
 
 
-@app.route("/delete", methods=["GET", "POST"])
+@app.route("/delete", methods=["POST"])
 def reset_directory():
     filer.rmdirs()
     session.clear()
