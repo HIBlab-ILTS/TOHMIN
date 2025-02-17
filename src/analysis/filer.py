@@ -375,7 +375,13 @@ def save_files(files: list, target: str) -> list:
     Returns:
         list: A list of saved filenames.
     """
-    dir_tag = DATA_DIR_PATH if target == "DATA" else PARAMS_DIR_PATH
+    if target == "PARAMS":
+        dir_tag = PARAMS_DIR_PATH
+        if len(os.listdir(dir_tag)) != 0:
+            file_path = os.path.join(dir_tag, os.listdir(dir_tag)[0])
+            os.remove(file_path)
+    else:
+        dir_tag = DATA_DIR_PATH
     file_names = []
     for file in files:
         file.save(os.path.join(dir_tag, file.filename))
@@ -529,6 +535,7 @@ def fig_list(files: list) -> dict:
         fig[file] = os.path.join(FIGS_DIR_PATH, f"{file.replace('.csv', '.svg')}")
     return fig
 
+
 def validate_values(param_df: pd.DataFrame, headers: set, attr: dict) -> None:
     """
     Pick up essential parameters from the uploaded CSV file.
@@ -545,26 +552,30 @@ def validate_values(param_df: pd.DataFrame, headers: set, attr: dict) -> None:
         'exclusion_start_time',
         'exclusion_end_time'
     }
-    check_cols = headers.difference(non_required)
-    for col in check_cols:
-        if param_df[col].isnull().values.any():
-            raise ValueError(f"{col} has one and more empty.")
+    check_cols = headers - non_required
+    required_errors = [col for col in check_cols if param_df[col].isnull().values.any()]
+    if required_errors:
+        raise ValueError(f"The {",".join(required_errors)} field has one or more empty entries, but it is mandatory.")
     
     # check validate
     param_df["file_name"] = param_df["file_name"].apply(
         lambda nm: f"{nm.replace('.csv', '')}.csv"
     )
+    validation_errors = []
     for name, min in attr.items():
         check_df = param_df[param_df["file_name"] == name]
         if check_df.empty:
-            raise ValueError(f"Not found parameter in {name}.")
+            validation_errors.append(f"Not found parameter in {name}.")
+            continue
         # check tempurature column
         for col in ['hib_start_tmp', 'upper_threshold', 'lower_threshold']:
             if not -10 <= int(check_df[col].iloc[0]) <= 50:
-                raise ValueError(f"Out of range {col} value in {name}.")
+                validation_errors.append(f"Out of range {col} value in {name}.")
+                continue
         value = int(check_df['prehib_low_Tb_threshold'].iloc[0])
         if not int(check_df['hib_start_tmp'].iloc[0]) <= value <= 50:
-            raise ValueError(f"Out of range prehib_low_Tb_threshold value in {name}.")
+            validation_errors.append(f"Out of range prehib_low_Tb_threshold value in {name}.")
+            continue
         # check discrimination column
         for col, max in [
             ('hib_start_discrimination', 7200),
@@ -573,7 +584,10 @@ def validate_values(param_df: pd.DataFrame, headers: set, attr: dict) -> None:
             ('pa_discrimination', 360)
         ]:
             if not min <= int(check_df[col].iloc[0]) <= max:
-                raise ValueError(f"Out of range {col} value in {name}.")
+                validation_errors.append(f"Out of range {col} value in {name}.")
+                continue
+    if validation_errors:
+        raise ValueError(f"The uploaded parameter file found some errors.\n\n {"\n".join(validation_errors)}")
 
 
 def preview_params(file_name: str, attrs: dict) -> tuple:
@@ -613,10 +627,10 @@ def preview_params(file_name: str, attrs: dict) -> tuple:
         return tb.columns.tolist(), tb.values.tolist()
     except ValueError as e:
         print(e)
-        return ValueError(str(e))
+        return None, ValueError(str(e))
     except Exception as e:
         print(e)
-        return 'Please upload the accurate data again'
+        return None, 'Please upload the accurate data again.'
 
 
 def color_code() -> dict:
@@ -697,4 +711,10 @@ def plot_coloring_events(
         full_html=False,
         include_plotlyjs="cdn",
     )
-    return {file_name: fig.to_html(full_html=False, include_plotlyjs="cdn")}
+    return {
+        file_name: fig.to_html(
+            full_html=False,
+            include_plotlyjs="cdn",
+            config={'responsive': True}
+        )
+    }

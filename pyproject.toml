@@ -5,6 +5,7 @@ description = ""
 authors = ["Yutaro Shimoyama"]
 license = "MIT"
 readme = "README.md"
+packages = [{ include = "src/analysis" }]
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"

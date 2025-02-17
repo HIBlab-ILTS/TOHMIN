@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
+<div id="loading">
+  <div class="spinner"></div>
+</div>
 <div  class="text-center mb-4">
   <h1>Hibernation Analysis Program</h1>
   <p>If you set parameters with csv, you need to upload csv format from <a href="/parameter_upload">this form</a>.</p>
@@ -11,7 +14,7 @@
       <li class="list-group-item">{{filename}}</li>
     {% endfor %}
   </ul>
-  <form class="row g-3 needs-validation" method="POST" action="/analyze" novalidate>
+  <form class="row g-3 needs-validation" id="form-payload" method="POST" action="/analyze" novalidate>
     <div class="col-md-6">
       <div class="col-mb-3 p-1">
         <label for="id" class="form-label" data-toggle="tooltip" data-placement="right" title="The Unique identifier used for output file names (no duplicates allowed).">
@@ -157,7 +160,7 @@
     </div>
     {% endif %}
     <div class="col-sm-12 text-center">
-      <button class="btn btn-secondary" type="submit">Send</button>
+      <button class="btn btn-secondary" id="needLoading">Send</button>
     </div>
   </form>
 </div>

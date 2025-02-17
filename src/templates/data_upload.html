@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
+<div id="loading">
+  <div class="spinner"></div>
+</div>
 <div class="text-center mb-4">
   <h1 >Hibernation Analysis Program</h1>
   <p>
@@ -8,7 +11,7 @@
   </p>
 </div>
 <div class="card text-bg-light p-4 mt-3">
-  <form class="row m-5 needs-validation" method="POST" action="/visualization" enctype="multipart/form-data" novalidate>
+  <form class="row m-5 needs-validation" id="form-payload" method="POST" action="/visualization" enctype="multipart/form-data" novalidate>
     <div class="col-sm-12">
       <label for="uploadValidation" class="form-label">Test data</label>
       <input class="form-control" id="uploadValidation" type="file" name="data_csv" accept=".csv" multiple required>
@@ -18,7 +21,7 @@
       </div>
     </div>
     <div class="col-sm-12 p-4 text-center">
-      <button class="btn btn-secondary" type="submit">Send</button>
+      <button class="btn btn-secondary" id="needLoading">Send</button>
     </div>
   </form>
 </div>

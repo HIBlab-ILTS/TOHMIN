@@ -130,7 +130,7 @@ def preview_params():
 
 
 # Analyze data page
-@app.route("/analyze", methods=["GET", "POST"])
+@app.route("/analyze", methods=["POST"])
 def analysis():
     files = session.get("files", [])
     data, _ = filer.data_format(files)
@@ -158,7 +158,7 @@ def analysis():
                 )
                 event_set |= {file: filer.output(peaks)}
         return render_template("analysis.html", divs=div_set, summary=event_set)
-    except (AttributeError ,TypeError):
+    except (AttributeError, TypeError):
         import traceback
         print(traceback.format_exc())
         return render_template(
@@ -183,7 +183,7 @@ def download_artifacts(file_name=None):
     return send_file(zip_file, as_attachment=True)
 
 
-@app.route("/delete", methods=["GET", "POST"])
+@app.route("/delete", methods=["POST"])
 def reset_directory():
     filer.rmdirs()
     session.clear()

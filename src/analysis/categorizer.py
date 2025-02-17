@@ -94,6 +94,8 @@ def _get_start_time(time: list, prehib_start_time: np.datetime64) -> np.datetime
     """
     for i in range(len(time)):
         if time[i] > prehib_start_time:
+            if i == 0:
+                return time[i]
             return time[i - 1]
     else:
         raise ValueError("Not found start time.")
@@ -115,6 +117,20 @@ def _get_end_time(time: list, hib_end_time: np.datetime64) -> np.datetime64:
     else:
         raise ValueError("Not found end time.")
 
+def _modify_discrimination_to_interval(interval: int, params: dict) -> dict:
+    """
+    Modifies the discrimination parameter to the interval specified in the input 
+    dictionary.
+    Args:
+        interval (int): The time interval.
+        params (dict): The input dictionary containing the discrimination parameter.
+    Returns:
+        dict: The modified dictionary.
+    """
+    for name, val in params.items():
+        if "discrimination" in name:
+            params[name] = np.int32(val / interval)
+    return params
 
 def _is_hib_start(tmp: list, current_index: int, params: dict) -> bool:
     """
@@ -249,7 +265,7 @@ def _get_interval(time: list) -> dict:
     return {"seconds": seconds, "minutes": minutes, "with_seconds": interval}
 
 
-def _get_dead_index(tmp: list, time: list, current_index: int, params: dict) -> int:
+def _get_dead_index(tmp: list, time: list, current_index: int, interval: int) -> int:
     """
     Calculates the index in the data where the death condition is determined
     to have occurred.
@@ -258,11 +274,10 @@ def _get_dead_index(tmp: list, time: list, current_index: int, params: dict) -> 
         tmp (list): The temperature data.
         time (list): The time data.
         current_index (int): The current index.
-        params (dict): The parameters.
+        interval (int): The interval for dead descrimination.
     Returns:
         int: The index of the data point where death is determined to have occurred.
     """
-    interval = _get_interval(time)["minutes"] * 24 * params["dead_discrimination"]
     dead_tmp = None
     for i in range(interval):
         # 期間内で微妙な体温変動が発生し、目的の値より後ろの値が取得される可能性があるため小数点第一位を四捨五入した値にする
@@ -311,6 +326,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
     """
     results = _structured()
     interval = _get_interval(time)
+    params = _modify_discrimination_to_interval(interval["minutes"], params)
     results |= {
         "interval": interval,
         "ID": params["id"],
@@ -396,7 +412,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
         elif tmp[i] < params["lower_threshold"]:
             # Check whether dead
             if results["time"]["hib_end"] == "" and _is_dead(tmp, i, params):
-                dead_idx = _get_dead_index(tmp, time, i, params)
+                dead_idx = _get_dead_index(tmp, time, i, params["dead_discrimination"])
 
                 results["tmp"]["hib_end"] = tmp[i - 1]
                 results["time"]["hib_end"] = time[i - 1]
@@ -559,6 +575,6 @@ def analyze(param_list: list, data: pd.DataFrame) -> dict:
     params = _data_set(param_list)
     res = _peak_counts(tmp, time, params)
     res = modify_pa(res, params["pa_discrimination"])
-    res = get_low_tb_events(res, params["prehib_low_Tb_threshold"])
-
+    if res["tmp"]["prehib"] and res["tmp"]["prehib"]:
+        res = get_low_tb_events(res, params["prehib_low_Tb_threshold"])
     return res
