@@ -1,3 +1,4 @@
+import traceback
 from flask import Flask, render_template, request, send_file, session
 from pandas.errors import EmptyDataError
 
@@ -75,7 +76,6 @@ def visualization():
             msg="Upload valid analysis data."
         )
     except Exception as e:
-        import traceback
         print(traceback.format_exc())
         return render_template(
             "data_upload.html",
@@ -159,7 +159,6 @@ def analysis():
                 event_set |= {file: filer.output(peaks)}
         return render_template("analysis.html", divs=div_set, summary=event_set)
     except (AttributeError, TypeError):
-        import traceback
         print(traceback.format_exc())
         return render_template(
             f"params_{session['form_tag']}.html",
@@ -167,7 +166,6 @@ def analysis():
             msg="Select a valid parameter file."
         )
     except Exception as e:
-        import traceback
         print(traceback.format_exc())
         return render_template(
             f"params_{session['form_tag']}.html",

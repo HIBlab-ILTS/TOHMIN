@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import re
 import shutil
+import traceback
 from typing import Union
 import zipfile
 
@@ -150,9 +151,11 @@ def data_format(files: list) -> tuple:
             df["Date/Time"] = df["Date/Time"].apply(adjust_year).astype("datetime64[s]")
             data[file] = df
         except pd.errors.ParserError as e:
+            print(traceback.format_exc())
             print(f"data_format parse error in {file}: {str(e)}")
             errors[file] = str(e)
         except Exception as e:
+            print(traceback.format_exc())
             print(f"Other case error in {file}: {str(e)}")
             errors[file] = str(e)
     return data, errors
@@ -231,7 +234,7 @@ def convert_datetime(param_dt: str) -> str:
 
         return f"{year}-{month}-{day} {hour}:{minutes}"
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
 
 
 def create_unique_dir(unique_name: str) -> Union[str, str]:

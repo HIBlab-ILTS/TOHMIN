@@ -367,6 +367,8 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
             process_time.append(time[i])
             continue
         elif params["hib_end_time"] == time[i]:
+            results["tmp"]["hib_end"] = tmp[i]
+            results["time"]["hib_end"] = time[i]
             break
         # For Post-Hibernation
         elif results["time"]["hib_end"] != "":
