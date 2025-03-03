@@ -336,7 +336,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
     # For Non-Hibernation 
     if np.all(tmp > params["hib_start_tmp"]):
         _append_proc("prehib", results, tmp, time)
-        results["status"] = "unhiber"
+        results["status"] = "Unhibernation"
         return results
 
     params["prehib_start_time"] = _get_start_time(time, params["prehib_start_time"])
@@ -407,7 +407,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                 if _is_hib_stop(tmp, i, params):
                     results["tmp"]["hib_end"] = tmp[i - 1]
                     results["time"]["hib_end"] = time[i - 1]
-                    results["status"] = "dissection"
+                    results["status"] = "Termination"
                     break
             process_tmp.append(tmp[i])
             process_time.append(time[i])
@@ -423,7 +423,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                 process_time += list(time[i : i + dead_idx])
                 _append_proc("DT", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
-                results["status"] = "dead"
+                results["status"] = "Dead"
                 break
             # For Cooling
             elif previous_tmp >= params["upper_threshold"]:
@@ -460,7 +460,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
             ):
                 results["tmp"]["hib_end"] = tmp[i - 1]
                 results["time"]["hib_end"] = time[i - 1]
-                results["status"] = "refractory"
+                results["status"] = "Refractoriness"
                 continue
 
             process_tmp.append(tmp[i])

@@ -1,21 +1,65 @@
 {% extends "base.html" %}
 {% block content %}
   <div class="text-center mb-4">
-    <h1>Instructions</h1>
+    <h1>Installations</h1>
   </div>
-
+  <hr><br>
   <div class="container">
-    <div class="card">
-      
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Overview</h2>
+        <div class="m-3">
+          &nbsp;This guide explains how to use the hibernation analysis program and how to interpret the output data.<br>
+          &nbsp;This program is a tool designed to automatically analyze and visualize various physiological events during hibernation periods using animal core body temperature (Tb) data.<br>
+          &nbsp;If you will publish your paper using this program, please cite <i>Otsuka et al</i>., doi: <a href="https://www.biorxiv.org/content/10.1101/2024.12.09.626892v1" target="_blank">10.1101/2024.12.09.626892</a>
+        </div>
+      </div>
     </div>
     <div class="row">
       <div class="col-md-12">
-        <h2>Paramerters</h2>
+        <h2>Program Overview and Output Data</h2>
+        <div class="m-3">
+          &nbsp;The TOHMIN program (TOols of Hibernation Measurement and INterpretation) is an open-source tool developed to analyze Tb fluctuation data in small hibernating mammals in detail.<br>
+          &nbsp;Program automatically detects and quantifies various characteristics of hibernation patterns from long-term Tb recordings.
+        </div>
+        <div class="m-2">
+          <h3>Input</h3>
+          <ul>
+            <li>Time-series Tb data recorded by temperature data loggers (iButton)</li>
+            <li>Parameter setting file (`parameters_format.csv`)</li>
+          </ul>
+        </div>
+        <div class="m-2">
+          <h3>Output</h3>
+            <ul>
+              <li>
+                <b>hib_analysis_[ID].csv</b><br>
+                &nbsp;Summary data of hibernation events ([ID] is the individual identifier specified in the parameters).
+              </li>
+              <li>
+                <b>hib_process_data_[ID].csv</b><br>
+                &nbsp;Detailed data of Tb fluctuations ([ID] is the individual identifier specified in the parameters).
+              </li>
+              <li>
+                <b>[file_name].html</b><br>
+                &nbsp;Interactive Tb fluctuation chart.
+              </li>
+              <li>
+                <b>[file_name].svg</b><br>
+                &nbsp;Static Tb fluctuation chart.
+              </li>
+            </ul>
+        </div>
+        <div class="m-2">
+          <h3>Paramerters</h3>
+          &nbsp;To run the TOHMIN program, you need to set the following parameters:
+        </div>
         <table class="table table-striped">
           <thead>
             <tr>
               <th>Name</th>
-              <th>Explanation</th>
+              <th>Column name</th>
+              <th>Description</th>
               <th>Required</th>
               <th>Type</th>
               <th>Range</th>
@@ -26,7 +70,8 @@
           <tbody>
             <tr>
               <td>Filename</td>
-              <td>Name of the data file to be analyzed. The file name should be specified accurately.<br>The file extension can be included or omitted. If the specified file name cannot be found, the data will not be loaded.</td>
+              <td>file_name</td>
+              <td>Name of the data file to be analyzed.</td>
               <td>yes</td>
               <td>String</td>
               <td>-</td>
@@ -35,7 +80,8 @@
             </tr>
             <tr>
               <td>ID</td>
-              <td>A unique identifier for the monitored animals.<br>This ID will be used to name the output files generated after analysis.<br>Therefore, duplicate IDs cannot be used within a single analysis session.</td>
+              <td>ID</td>
+              <td>Animal identifier (used for output filenames).</td>
               <td>yes</td>
               <td>String</td>
               <td>-</td>
@@ -44,7 +90,8 @@
             </tr>
             <tr>
               <td>Group</td>
-              <td>Specifies the experimental or control group designation.</td>
+              <td>group</td>
+              <td>Experimental group designation.</td>
               <td>yes</td>
               <td>String</td>
               <td>-</td>
@@ -53,114 +100,332 @@
             </tr>
             <tr>
               <td>Prehib Start Time</td>
-              <td>Specifies the date and time of the start of the pre-hibernation period.<br>The analysis will begin from this specified datetime.</td>
+              <td>prehib_start_time</td>
+              <td>Start point (date and time) of the pre-hibernation period.</td>
               <td>yes</td>
               <td>Datetime</td>
               <td>-</td>
               <td>-</td>
-              <td>-</td>
+              <td>Date/Time</td>
             </tr>
             <tr>
               <td>Hib End Time</td>
-              <td>Specifies the end time of the hibernation period.<br>If not specified, the program will automatically determine the end of hibernation period based on the analysis criteria.</td>
+              <td>hib_end_time</td>
+              <td>End point (date and time) of the hibernation period (if blank, automatically determined).</td>
               <td>no</td>
               <td>Datetime</td>
               <td>-</td>
               <td>-</td>
-              <td>-</td>
+              <td>Date/Time</td>
             </tr>
             <tr>
               <td>Hib Start Tmp</td>
-              <td>Body temparature (Tb) threshold for detecting the first hibernation onset.<br>This parameter is specifically designed to be more stringent, in other word lower, than the upper_threshold to ensures that only genuine hibernation onset is detected. Without setting this parameter appropriately, false classifications of the hibernation onset could occur by brief Tb drops or accidental hypothermic states during the pre-hibernation period.</td>
+              <td>hib_start_tmp</td>
+              <td>Temperature threshold for detecting hibernation onset.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>-10-50</td>
+              <td>min: -10<br>max: 50</td>
               <td>30</td>
               <td>°C</td>
             </tr>
             <tr>
               <td>Upper Threshold</td>
-              <td>Lower limit threshold of Tb for judging PA state during hibernation period.<br>Values above this threshold are considered PA state.</td>
+              <td>upper_threshold</td>
+              <td>Threshold for determining euthermic phase of Tb change.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>-10-50</td>
+              <td>min: -10<br>max: 50</td>
               <td>33</td>
               <td>°C</td>
             </tr>
             <tr>
               <td>Lower Threshold</td>
-              <td>Upper limit threshold of Tb for deep torpor (DT) state.<br>Values below this threshold are regarded DT state.</td>
+              <td>lower_threshold</td>
+              <td>Threshold for determining deep torpor phase of Tb change.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>-10-50</td>
+              <td>min: -10<br>max: 50</td>
               <td>33</td>
               <td>°C</td>
             </tr>
             <tr>
               <td>Prehib Low Tb Threshold</td>
-              <td>Tb threshold for low Tb event detection during pre-hibernation period, not in hibernation period.<br>Default value is set to 33ºC.</td>
+              <td>prehib_low_Tb_threshold</td>
+              <td>Low Tb threshold during pre-hibernation period.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>-10-50</td>
+              <td>min: -10<br>max: 50</td>
               <td>33</td>
               <td>°C</td>
             </tr>
             <tr>
               <td>Hib Start Discrimination</td>
-              <td>Time threshold for determining hibernation onset.<br>When Tb remains below upper_threshold for longer than this specified duration, the program classifies it as the hibernation onset rather than temporal low Tb event.</td>
+              <td>hib_start_discrimination</td>
+              <td>Time duration for determining hibernation onset by gradual decrease of Tb.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>interval-7200</td>
+              <td>min: interval<br>max: 7200</td>
               <td>interval</td>
               <td>min</td>
             </tr>
             <tr>
               <td>Hib End Discrimination</td>
-              <td>Specifes time interval (minutes) for determining the spontaneous end of hibernation( post-hibernation period).<br>The program identifies the first point of a period where Tb consistently stays above upper_threshold, with temporary drops below upper_threshold allowed if they are shorter than the specified interval.<br>When these conditions are met, the program marks the first point of this period as the end of hibernation.</td>
+              <td>hib_end_discrimination</td>
+              <td>Time duration of euthermic phase for determining hibernation exit.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>interval-43200</td>
+              <td>min: interval<br>max: 43200</td>
               <td>20160</td>
               <td>min</td>
             </tr>
             <tr>
               <td>Dead Discrimination</td>
-              <td>Time criterion for mortality determination.<br>When Tb remains below lower_threshold for the specified duration, the program determines mortality has occurred.<br>The time of death is set to the first instance when the lowest Tb was recorded during this period.</td>
+              <td>dead_discrimination</td>
+              <td>Time duration of Tb lower than lower_threshold for discriminating spontaneous death from deep torpor.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>interval-43200</td>
+              <td>min: interval<br>max: 43200</td>
               <td>10080</td>
               <td>min</td>
             </tr>
             <tr>
               <td>PA Discrimination</td>
-              <td>Time criterion threshold for consolidating separated periodic arousal (PA) episodes into a single event, preventing false torpor classifications from minor body temperature fluctuations.</td>
+              <td>pa_discrimination</td>
+              <td>Time criterion for avoiding division of single PA event.</td>
               <td>yes</td>
               <td>Number</td>
-              <td>interval-360</td>
+              <td>min: interval<br>max: 360</td>
               <td>interval</td>
               <td>min</td>
             </tr>
             <tr>
               <td>Exclusion Start Time</td>
-              <td>Defines the start time for excluding data from analysis.<br>Used to remove known artifacts or obvious errors in the data.</td>
+              <td>exclusion_start_time</td>
+              <td>Start point of the period to be excluded from analysis.</td>
               <td>no</td>
               <td>Datetime</td>
               <td>-</td>
               <td>-</td>
-              <td>-</td>
+              <td>Date/Time</td>
             </tr>
             <tr>
               <td>Exclusion End Time</td>
-              <td>Defines the end time for excluding data from analysis.<br>Used in conjunction with <i>Exclusion End Time</i> to specify the complete period of data to be excluded.</td>
+              <td>exclusion_end_time</td>
+              <td>End point of the period to be excluded from analysis.</td>
               <td>no</td>
               <td>Datetime</td>
               <td>-</td>
               <td>-</td>
-              <td>-</td>
+              <td>Date/Time</td>
             </tr>
           </tbody>
         </table>
+        <div class="m-2">
+          <h4>Detailed Explanation of Key Parameters</h4>
+          <ul>
+            <li>
+              <b>hib_start_tmp</b> (30°C), <b>hib_start_discrimination</b>(120 min)<br>
+              &nbsp;These parameters are required for determining hibernation onset.<br>
+              &nbsp;<b>hib_start_tmp</b> is a parameter for specifying temperature threshold for detecting hibernation onset.<br>
+              &nbsp;Hibernation is determined to have started when Tb remains below this value for the period specified by <b>hib_start_discrimination</b>.<br>
+              &nbsp;<b>hib_start_tmp</b> is set lower than <b>upper_threshold</b> to distinguish actual hibernation onset from temporal Tb fluctuation.
+            </li>
+            <li>
+              <b>upper_threshold</b> (default 33°C)<br>
+              &nbsp;If Tb exceeds this value, it is considered as euthermic Tb states in PA phase.
+            </li>
+            <li>
+              <b>lower_threshold</b> (default 10°C)<br>
+              &nbsp;If Tb is below this value, it is determined as DT phase.
+            </li>
+            <li>
+              <b>pa_discrimination</b> (default 30 minutes)<br>
+              &nbsp;In some cases, a single PA event could be divided into multiple events due to transient drops of Tb below <b>upper_threshold</b>.<br>
+              &nbsp;<b>pa_discrimination</b> could be set to avoid such division without counting low Tb events shorter than this parameter, allowing to make a single longer PA event.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Interpreting Output Data</h2>
+        <div class="m-3">
+          &nbsp;The TOHMIN program generates two output files.
+          <ul>
+            <li>
+              <b>hib_analysis_[ID].csv</b><br>
+              &nbsp;This file provides an overview of major events during hibernation ([ID] is the individual identifier specified in the parameters):
+            </li>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Column</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Status</td>
+                  <td>State (Refractoriness [post-hibernation], Dead, or Termination).</td>
+                </tr>
+                <tr>
+                  <td>Event Name</td>
+                  <td>Event name (low_Tb_events, pre_hibernation, hibernation, PA, DT, Arousal Pending, Cooling, Rewarming).</td>
+                </tr>
+                <tr>
+                  <td>Event Number</td>
+                  <td>The serial number of events counted (to distinguish events of the same type).</td>
+                </tr>
+                <tr>
+                  <td>First Point of Event</td>
+                  <td>Event start time.</td>
+                </tr>
+                <tr>
+                  <td>Last Point of Event</td>
+                  <td>Event end time.</td>
+                </tr>
+                <tr>
+                  <td>Delta Time</td>
+                  <td>Elapsed time (seconds).</td>
+                </tr>
+                <tr>
+                  <td>Unit</td>
+                  <td>Time unit (usually seconds).</td>
+                </tr>
+                <tr>
+                  <td>Group</td>
+                  <td>Group information.</td>
+                </tr>
+              </tbody>
+            </table>
+            <li>
+              <b>hib_process_data_[ID].csv</b><br>
+              &nbsp;This file provides detailed time-series data of Tb fluctuations ([ID] is the individual identifier specified in the parameters):<br>
+            </li>
+            <div class="m-2">
+              The Status row indicates the physiological state of the animals judged by TOHMIN program as follows:<br>
+              <ul>
+                <li>
+                  <b>Refractoriness</b> - The animal exited hibernation (Post-hibernation).
+                </li>
+                <li>
+                  <b>Dead</b> - The animal died during DT.
+                </li>
+                <li>
+                  <b>Termination</b> - Hibernation was forced to terminate judging from the Tb dataset.
+                </li>
+                <li>
+                  <b>Unhibernation</b> - The animal did not hibernate.
+                </li>
+              </ul>
+            </div>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Column</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Status</td>
+                  <td>State (Refractoriness [post-hibernation], Dead, or Termination).</td>
+                </tr>
+                <tr>
+                  <td>Event Number</td>
+                  <td>he serial number of events counted (to distinguish events of the same type).</td>
+                </tr>
+                <tr>
+                  <td>Delta Time</td>
+                  <td>Measurement date and time.</td>
+                </tr>
+                <tr>
+                  <td>Value</td>
+                  <td>Tb value (°C).</td>
+                </tr>
+                <tr>
+                  <td>Group</td>
+                  <td>Group information.</td>
+                </tr>
+              </tbody>
+            </table>
+          </ul>
+          <h4>Measurable key values</h4>
+          <div class="m-3">
+            &nbsp;The TOHMIN program calculates the following key values.<br>
+            &nbsp;The values will appear in  column Delta Time (seconds):
+          </div>
+          <ul>
+            <li>
+              <b>pre_hibernation</b><br>
+              &nbsp;Pre-hibernation period from the start of winter-like conditions (low temperature, short photoperiod) to the onset of hibernation.
+            </li>
+            <li>
+              <b>hibernation</b><br>
+              &nbsp;Hibernation period from hibernation onset to hibernation end.<br>
+              &nbsp;Hibernation end is defined as the point when Tb no longer drops below 33°C for more than 14 days.
+            </li>
+            <li>
+              <b>low_Tb_events</b><br>
+              &nbsp;Temporary low Tb events during pre-hibernation period.
+            </li>
+            <li>
+              <b>PA</b><br>
+              &nbsp;Periodic arousal phase.
+            </li>
+            <li>
+              <b>ST</b><br>
+              &nbsp;shallow torpor phase.
+            </li>
+            <li>
+              <b>DT</b><br>
+              &nbsp;Deep torpor phase.
+            </li>
+            <li>
+              <b>cooling</b><br>
+              &nbsp;Cooling phase (transition from PA to DT).
+            </li>
+            <li>
+              <b>rewarming</b><br>
+              &nbsp;rewarming phase (transition from DT to PA).
+            </li>
+            <li>
+              <b>Arousal Pending</b><br>
+              &nbsp;arousal is arrested and the animal returns to DT.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Understanding Tb Fluctuation Charts</h2>
+        <div class="m-3">
+          &nbsp;Two types of Tb fluctuation charts ([file_name].html, [file_name].svg) are generated:
+        </div>
+        <ul>
+          <li>
+            <b>[file_name].html</b><br>
+            &nbsp;Interactive Tb fluctuation chart.
+          </li>
+          <li>
+            <b>[file_name].svg</b><br>
+            &nbsp;Static Tb fluctuation chart (suitable for printing and document creation).
+          </li>
+        </ul>
+        <div class="m-3">
+          &nbsp;These files are graphs that visualize a time series of Tb data obtained from hibernation experiments.<br>
+        </div>
+        <h4>Main Features and Display Contents</h4>
+        <div class="m-2">
+          <ul>
+            <li>X-axis shows date/time, Y-axis shows Tb (°C)</li>
+            <li>Different colors display each hibernation phase (low_Tb_events, PA, DT, ST, Arousal pending, Cooling, Rewarming, etc.)</li>
+            <li>Zoom function - Enlarge specific periods for detailed observation</li>
+            <li>Data point information display - Display detailed information (date/time, Tb value) for each measurement point</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
