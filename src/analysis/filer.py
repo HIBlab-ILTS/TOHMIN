@@ -165,6 +165,9 @@ def data_format_for_arco(file):
     """
     Processes data specifically for the ARCO data logger format, cleaning 
     and converting it into a DataFrame.
+
+    Note:
+        Next action, add arco type.
     """
     dir_path = os.path.join(os.getcwd(), DATA_DIR_PATH)
     with open(
