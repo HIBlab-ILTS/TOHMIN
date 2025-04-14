@@ -265,14 +265,13 @@ def _get_interval(time: list) -> dict:
     return {"seconds": seconds, "minutes": minutes, "with_seconds": interval}
 
 
-def _get_dead_index(tmp: list, time: list, current_index: int, interval: int) -> int:
+def _get_dead_index(tmp: list, current_index: int, interval: int) -> int:
     """
     Calculates the index in the data where the death condition is determined
     to have occurred.
 
     Args:
         tmp (list): The temperature data.
-        time (list): The time data.
         current_index (int): The current index.
         interval (int): The interval for dead descrimination.
     Returns:
@@ -493,28 +492,30 @@ def modify_pa(results: dict, pa_discrimination: int) -> dict:
         results["time"]["PA"].values(), results["tmp"]["PA"].values()
     ):
         for st_num, st_time in results["time"]["ST"].items():
-            if len(st_time) < int(pa_discrimination / interval):
-                if st_time[0] - pa_time[-1] == np.timedelta64(interval, "m"):
-                    temp_pa_tmp.append(pa_tmp + results["tmp"]["ST"][st_num])
-                    temp_pa_time.append(pa_time + st_time)
-                    del results["tmp"]["ST"][st_num]
-                    del results["time"]["ST"][st_num]
-                    break
-        else:
-            temp_pa_tmp.append(pa_tmp)
-            temp_pa_time.append(pa_time)
+            if (
+                pa_time[-1] + np.timedelta64(interval, "m") == st_time[0]
+                and len(st_time) < pa_discrimination
+            ):
+                temp_pa_tmp.append(pa_tmp + results["tmp"]["ST"][st_num])
+                temp_pa_time.append(pa_time + st_time)
+                del results["tmp"]["ST"][st_num]
+                del results["time"]["ST"][st_num]
+                break
+            else:
+                temp_pa_tmp.append(pa_tmp)
+                temp_pa_time.append(pa_time)
 
     merge_pa_time, merge_pa_tmp = [], []
-    for pa_time, pa_tmp in zip(temp_pa_time, temp_pa_tmp):
+    for new_pa_time, new_pa_tmp in zip(temp_pa_time, temp_pa_tmp):
         if len(merge_pa_time) == 0:
-            merge_pa_tmp.append(pa_tmp)
-            merge_pa_time.append(pa_time)
-        elif merge_pa_time[-1][-1] + np.timedelta64(interval, "m") == pa_time[0]:
-            merge_pa_tmp[-1].extend(pa_tmp)
-            merge_pa_time[-1].extend(pa_time)
+            merge_pa_tmp.append(new_pa_tmp)
+            merge_pa_time.append(new_pa_time)
+        elif merge_pa_time[-1][-1] + np.timedelta64(interval, "m") == new_pa_time[0]:
+            merge_pa_tmp[-1].extend(new_pa_tmp)
+            merge_pa_time[-1].extend(new_pa_time)
         else:
-            merge_pa_tmp.append(pa_tmp)
-            merge_pa_time.append(pa_time)
+            merge_pa_tmp.append(new_pa_tmp)
+            merge_pa_time.append(new_pa_time)
 
     results["tmp"]["PA"] = {i + 1: pa for i, pa in enumerate(merge_pa_tmp)}
     results["time"]["PA"] = {i + 1: pa for i, pa in enumerate(merge_pa_time)}
