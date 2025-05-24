@@ -370,8 +370,12 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
             results["time"]["hib_end"] = time[i]
             break
         # For Post-Hibernation
-        elif results["time"]["hib_end"] != "":
-            for posthib_i in range(interval["minutes"] * 24 * 7):
+        elif results["time"]["hib_end"] != "" and results["time"]["hib_end"] != time[-1]:
+            if interval["minutes"] * 24 * 7 <= len(time):
+                range_index = interval["minutes"] * 24 * 7
+            else:
+                range_index = len(time) - 1
+            for posthib_i in range(range_index - i):
                 process_tmp.append(tmp[i + posthib_i])
                 process_time.append(time[i + posthib_i])
                 _append_proc("posthib", results, process_tmp, process_time)
