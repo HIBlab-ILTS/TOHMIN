@@ -146,6 +146,8 @@ def _is_hib_start(tmp: list, current_index: int, params: dict) -> bool:
         bool: True if the hibernation start condition is met, False otherwise.
     """
     for i in range(1, params["hib_start_discrimination"] + 1):
+        if len(tmp) <= current_index + i:
+            return False
         if tmp[current_index + i] < params["upper_threshold"] <= params[
             "hib_start_tmp"
         ] or (
@@ -175,7 +177,6 @@ def _is_hib_end(
     Returns:
         bool: True if the hibernation end condition is met, False otherwise.
     """
-    # end_point_index = interval * 24 * params["hib_end_discrimination"]
     end_point_index = params["hib_end_discrimination"]
     index = (
         end_point_index
@@ -198,7 +199,7 @@ def _is_hib_end(
     return True
 
 
-def _is_dead(tmp: list, current_index: int,params: dict) -> bool:
+def _is_dead(tmp: list, current_index: int, params: dict) -> bool:
     """
     Receives temperature data, the current index, time interval, and parameters,
     returning a boolean value indicating whether the death condition is met. 
@@ -399,6 +400,10 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                     previous_tmp = tmp[i]
                 _append_proc("prehib", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
+            else:
+                if len(tmp) <= i + params["hib_start_discrimination"]:
+                    results["status"] = "Unhibernation"
+                    break
         elif (
             results["time"]["hib_start"] != ""
             and params["lower_threshold"] <= tmp[i] < params["upper_threshold"]
