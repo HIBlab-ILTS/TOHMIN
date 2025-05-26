@@ -333,10 +333,14 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
     }
 
     # For Non-Hibernation 
-    if np.all(tmp > params["hib_start_tmp"]):
+    if np.all(tmp[~np.isnan(tmp)] > params["hib_start_tmp"]):
         _append_proc("prehib", results, tmp, time)
         results["status"] = "Unhibernation"
         return results
+    
+    tmp_del_nan = tmp[~np.isnan(tmp)]
+    if np.all(tmp_del_nan > params["hib_start_tmp"]):
+        print("全てhib_start_tmpより大きいの温度です。")
 
     params["prehib_start_time"] = _get_start_time(time, params["prehib_start_time"])
     for i in range(len(time)):
@@ -491,24 +495,36 @@ def modify_pa(results: dict, pa_discrimination: int) -> dict:
     """
     interval = results["interval"]["minutes"]
 
+    st_keys_set = set()
     temp_pa_time, temp_pa_tmp = [], []
     for pa_time, pa_tmp in zip(
         results["time"]["PA"].values(), results["tmp"]["PA"].values()
     ):
+        adjust_st_flag = False
         for st_num, st_time in results["time"]["ST"].items():
-            if (
-                pa_time[-1] + np.timedelta64(interval, "m") == st_time[0]
-                and len(st_time) < pa_discrimination
-            ):
-                temp_pa_tmp.append(pa_tmp + results["tmp"]["ST"][st_num])
-                temp_pa_time.append(pa_time + st_time)
-                del results["tmp"]["ST"][st_num]
-                del results["time"]["ST"][st_num]
-                break
-            else:
-                temp_pa_tmp.append(pa_tmp)
-                temp_pa_time.append(pa_time)
+            if st_num in st_keys_set:
+                continue
 
+            if len(st_time) < pa_discrimination and \
+                pa_time[-1] + np.timedelta64(interval, "m") == st_time[0]:
+                    temp_pa_tmp.append(pa_tmp + results["tmp"]["ST"][st_num])
+                    temp_pa_time.append(pa_time + st_time)
+                    st_keys_set.add(st_num)
+                    adjust_st_flag = True
+                    break
+        
+        if not adjust_st_flag:
+            temp_pa_tmp.append(pa_tmp)
+            temp_pa_time.append(pa_time)
+    
+    remaining_st_tmp, remaining_st_time = {}, {}
+    st_counter = 0
+    for st_num, st_time in results["time"]["ST"].items():
+        if st_num not in st_keys_set:
+            st_counter += 1
+            remaining_st_tmp[st_counter] = results["tmp"]["ST"][st_num]
+            remaining_st_time[st_counter] = st_time
+    
     merge_pa_time, merge_pa_tmp = [], []
     for new_pa_time, new_pa_tmp in zip(temp_pa_time, temp_pa_tmp):
         if len(merge_pa_time) == 0:
@@ -523,12 +539,8 @@ def modify_pa(results: dict, pa_discrimination: int) -> dict:
 
     results["tmp"]["PA"] = {i + 1: pa for i, pa in enumerate(merge_pa_tmp)}
     results["time"]["PA"] = {i + 1: pa for i, pa in enumerate(merge_pa_time)}
-    results["tmp"]["ST"] = {
-        i + 1: st for i, st in enumerate(results["tmp"]["ST"].values())
-    }
-    results["time"]["ST"] = {
-        i + 1: st for i, st in enumerate(results["time"]["ST"].values())
-    }
+    results["tmp"]["ST"] = remaining_st_tmp
+    results["time"]["ST"] = remaining_st_time
     return results
 
 
@@ -581,7 +593,8 @@ def analyze(param_list: list, data: pd.DataFrame) -> dict:
     time = data["Date/Time"].values
     params = _data_set(param_list)
     res = _peak_counts(tmp, time, params)
-    res = modify_pa(res, params["pa_discrimination"])
-    if res["tmp"]["prehib"] and res["tmp"]["prehib"]:
+    if res["tmp"]["PA"]:
+        res = modify_pa(res, params["pa_discrimination"])
+    if res["tmp"]["prehib"]:
         res = get_low_tb_events(res, params["prehib_low_Tb_threshold"])
     return res

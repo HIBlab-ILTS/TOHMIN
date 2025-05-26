@@ -311,8 +311,9 @@ def save_artifacts(folder_path: str, file: str, results: dict) -> None:
                 "Group",
             ]
         )
-        if results["status"] == "unhiber":
+        if results["status"] == "Unhibernation":
             w.writerow(["", "", "", "", "", "", "", ""])
+        # elif results["status"] == "Unhibernation":
         else:
             for e_name, e_info in results["time"].items():
                 if e_name == "hib_start":
