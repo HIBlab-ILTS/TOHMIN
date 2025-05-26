@@ -338,6 +338,10 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
         _append_proc("prehib", results, tmp, time)
         results["status"] = "Unhibernation"
         return results
+    
+    tmp_del_nan = tmp[~np.isnan(tmp)]
+    if np.all(tmp_del_nan > params["hib_start_tmp"]):
+        print("全てhib_start_tmpより大きいの温度です。")
 
     params["prehib_start_time"] = _get_start_time(time, params["prehib_start_time"])
     for i in range(len(time)):
