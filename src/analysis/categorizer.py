@@ -265,7 +265,7 @@ def _get_interval(time: list) -> dict:
     return {"seconds": seconds, "minutes": minutes, "with_seconds": interval}
 
 
-def _get_dead_index(tmp: list, current_index: int, interval: int) -> int:
+def _get_dead_index(tmp: list, current_index: int, dead_descrimination: int) -> int:
     """
     Calculates the index in the data where the death condition is determined
     to have occurred.
@@ -278,7 +278,7 @@ def _get_dead_index(tmp: list, current_index: int, interval: int) -> int:
         int: The index of the data point where death is determined to have occurred.
     """
     dead_tmp = None
-    for i in range(interval):
+    for i in range(dead_descrimination):
         # 期間内で微妙な体温変動が発生し、目的の値より後ろの値が取得される可能性があるため小数点第一位を四捨五入した値にする
         target_tmp = round(tmp[current_index + i], 1)
         if dead_tmp is None or dead_tmp > target_tmp:
@@ -333,7 +333,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
     }
 
     # For Non-Hibernation 
-    if np.all(tmp > params["hib_start_tmp"]):
+    if np.all(tmp[~np.isnan(tmp)] > params["hib_start_tmp"]):
         _append_proc("prehib", results, tmp, time)
         results["status"] = "Unhibernation"
         return results
@@ -370,8 +370,13 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
             results["time"]["hib_end"] = time[i]
             break
         # For Post-Hibernation
-        elif results["time"]["hib_end"] != "":
-            for posthib_i in range(interval["minutes"] * 24 * 7):
+        elif results["time"]["hib_end"] != "" and results["time"]["hib_end"] != time[-1]:
+            range_index = (
+                interval["minutes"] * 24 * 7
+                if interval["minutes"] * 24 * 7 <= len(time)
+                else len(time) - 1
+            )
+            for posthib_i in range(range_index - i):
                 process_tmp.append(tmp[i + posthib_i])
                 process_time.append(time[i + posthib_i])
                 _append_proc("posthib", results, process_tmp, process_time)
@@ -413,7 +418,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
         elif tmp[i] < params["lower_threshold"]:
             # Check whether dead
             if results["time"]["hib_end"] == "" and _is_dead(tmp, i, params):
-                dead_idx = _get_dead_index(tmp, time, i, params["dead_discrimination"])
+                dead_idx = _get_dead_index(tmp, i, params["dead_discrimination"])
 
                 results["tmp"]["hib_end"] = tmp[i - 1]
                 results["time"]["hib_end"] = time[i - 1]
@@ -487,24 +492,36 @@ def modify_pa(results: dict, pa_discrimination: int) -> dict:
     """
     interval = results["interval"]["minutes"]
 
+    st_keys_set = set()
     temp_pa_time, temp_pa_tmp = [], []
     for pa_time, pa_tmp in zip(
         results["time"]["PA"].values(), results["tmp"]["PA"].values()
     ):
+        adjust_st_flag = False
         for st_num, st_time in results["time"]["ST"].items():
-            if (
-                pa_time[-1] + np.timedelta64(interval, "m") == st_time[0]
-                and len(st_time) < pa_discrimination
-            ):
-                temp_pa_tmp.append(pa_tmp + results["tmp"]["ST"][st_num])
-                temp_pa_time.append(pa_time + st_time)
-                del results["tmp"]["ST"][st_num]
-                del results["time"]["ST"][st_num]
-                break
-            else:
-                temp_pa_tmp.append(pa_tmp)
-                temp_pa_time.append(pa_time)
+            if st_num in st_keys_set:
+                continue
 
+            if len(st_time) < pa_discrimination and \
+                pa_time[-1] + np.timedelta64(interval, "m") == st_time[0]:
+                    temp_pa_tmp.append(pa_tmp + results["tmp"]["ST"][st_num])
+                    temp_pa_time.append(pa_time + st_time)
+                    st_keys_set.add(st_num)
+                    adjust_st_flag = True
+                    break
+        
+        if not adjust_st_flag:
+            temp_pa_tmp.append(pa_tmp)
+            temp_pa_time.append(pa_time)
+    
+    remaining_st_tmp, remaining_st_time = {}, {}
+    st_counter = 0
+    for st_num, st_time in results["time"]["ST"].items():
+        if st_num not in st_keys_set:
+            st_counter += 1
+            remaining_st_tmp[st_counter] = results["tmp"]["ST"][st_num]
+            remaining_st_time[st_counter] = st_time
+    
     merge_pa_time, merge_pa_tmp = [], []
     for new_pa_time, new_pa_tmp in zip(temp_pa_time, temp_pa_tmp):
         if len(merge_pa_time) == 0:
@@ -519,12 +536,8 @@ def modify_pa(results: dict, pa_discrimination: int) -> dict:
 
     results["tmp"]["PA"] = {i + 1: pa for i, pa in enumerate(merge_pa_tmp)}
     results["time"]["PA"] = {i + 1: pa for i, pa in enumerate(merge_pa_time)}
-    results["tmp"]["ST"] = {
-        i + 1: st for i, st in enumerate(results["tmp"]["ST"].values())
-    }
-    results["time"]["ST"] = {
-        i + 1: st for i, st in enumerate(results["time"]["ST"].values())
-    }
+    results["tmp"]["ST"] = remaining_st_tmp
+    results["time"]["ST"] = remaining_st_time
     return results
 
 
@@ -577,7 +590,8 @@ def analyze(param_list: list, data: pd.DataFrame) -> dict:
     time = data["Date/Time"].values
     params = _data_set(param_list)
     res = _peak_counts(tmp, time, params)
-    res = modify_pa(res, params["pa_discrimination"])
-    if res["tmp"]["prehib"] and res["tmp"]["prehib"]:
+    if res["tmp"]["PA"]:
+        res = modify_pa(res, params["pa_discrimination"])
+    if res["tmp"]["prehib"]:
         res = get_low_tb_events(res, params["prehib_low_Tb_threshold"])
     return res
