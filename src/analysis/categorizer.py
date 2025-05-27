@@ -265,7 +265,7 @@ def _get_interval(time: list) -> dict:
     return {"seconds": seconds, "minutes": minutes, "with_seconds": interval}
 
 
-def _get_dead_index(tmp: list, current_index: int, interval: int) -> int:
+def _get_dead_index(tmp: list, current_index: int, dead_descrimination: int) -> int:
     """
     Calculates the index in the data where the death condition is determined
     to have occurred.
@@ -278,7 +278,7 @@ def _get_dead_index(tmp: list, current_index: int, interval: int) -> int:
         int: The index of the data point where death is determined to have occurred.
     """
     dead_tmp = None
-    for i in range(interval):
+    for i in range(dead_descrimination):
         # 期間内で微妙な体温変動が発生し、目的の値より後ろの値が取得される可能性があるため小数点第一位を四捨五入した値にする
         target_tmp = round(tmp[current_index + i], 1)
         if dead_tmp is None or dead_tmp > target_tmp:
@@ -421,7 +421,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
         elif tmp[i] < params["lower_threshold"]:
             # Check whether dead
             if results["time"]["hib_end"] == "" and _is_dead(tmp, i, params):
-                dead_idx = _get_dead_index(tmp, time, i, params["dead_discrimination"])
+                dead_idx = _get_dead_index(tmp, i, params["dead_discrimination"])
 
                 results["tmp"]["hib_end"] = tmp[i - 1]
                 results["time"]["hib_end"] = time[i - 1]
