@@ -148,6 +148,7 @@ def _is_hib_start(tmp: list, current_index: int, params: dict) -> bool:
     for i in range(1, params["hib_start_discrimination"] + 1):
         if len(tmp) <= current_index + i:
             return False
+
         if tmp[current_index + i] < params["upper_threshold"] <= params[
             "hib_start_tmp"
         ] or (
@@ -338,10 +339,6 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
         _append_proc("prehib", results, tmp, time)
         results["status"] = "Unhibernation"
         return results
-    
-    tmp_del_nan = tmp[~np.isnan(tmp)]
-    if np.all(tmp_del_nan > params["hib_start_tmp"]):
-        print("全てhib_start_tmpより大きいの温度です。")
 
     params["prehib_start_time"] = _get_start_time(time, params["prehib_start_time"])
     for i in range(len(time)):
