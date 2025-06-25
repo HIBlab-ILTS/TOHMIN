@@ -26,6 +26,9 @@
         {{ divs[file_name] | safe }}
       </div>
       <div class="table-responsive">
+        <div>
+          <dt>Status: {{ peak_set.status }}</dt>
+        </div>
         <table class="table table-bordered">
           <thead class="table-primary">
             <tr>
@@ -76,7 +79,7 @@
     {% endfor %}
     <div class="text-center">
       <a class="btn btn-danger" role="button" href="/parameter_upload">Retry</a>
-      <button type="submit" class="btn btn-secondary mr-2"> Back to Top</button>
+      <button type="submit" class="btn btn-secondary mr-2">Top</button>
       <a class="btn btn-primary" role="button" href="/downloads">Download</a>
     </div>
   </form>

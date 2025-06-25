@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="loading">
+  <div class="spinner"></div>
+</div>
+<div class="text-center mb-4">
+  <h2>Sorry, plobrem has occurred.</h2>
+  <p>
+    An unexpected error has occurred.<br>Please return to the top page.
+  </p>
+</div>
+<div class="text-center">
+  <form class="m-5" method="GET" action="/">
+    <button type="submit" class="btn btn-secondary mr-2"> Top </button>
+  </form>
+</div>
+{% endblock %}
