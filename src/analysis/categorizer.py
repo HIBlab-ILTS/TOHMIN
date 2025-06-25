@@ -305,6 +305,8 @@ def _append_proc(
     """
     if None in process_tmp or None in process_time:
         return None
+    elif len(process_tmp) == 0 or len(process_time) == 0:
+        return None
     elif 1 in results["tmp"][event_name]:
         event_num = next(iter(reversed(results["tmp"][event_name].keys()))) + 1
     else:
@@ -403,6 +405,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                 process_tmp, process_time = [], []
             else:
                 if len(tmp) <= i + params["hib_start_discrimination"]:
+                    _append_proc("prehib", results, tmp, time)
                     results["status"] = "Unhibernation"
                     break
         elif (
