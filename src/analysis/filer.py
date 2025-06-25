@@ -313,7 +313,6 @@ def save_artifacts(folder_path: str, file: str, results: dict) -> None:
         )
         if results["status"] == "Unhibernation":
             w.writerow(["", "", "", "", "", "", "", ""])
-        # elif results["status"] == "Unhibernation":
         else:
             for e_name, e_info in results["time"].items():
                 if e_name == "hib_start":
@@ -405,8 +404,9 @@ def output(results: dict) -> dict:
     Returns:
         dict: The updated analysis results with the summary.
     """
-    display_set = {}
     print("-" * 60)
+    print(f'Status: {results["status"]}')
+    display_set = {"status": results["status"]}
     for event_name in results["time"].keys():
         if event_name in ["hib_start", "hib_end"]:
             pass
@@ -684,23 +684,45 @@ def plot_coloring_events(
             mode="lines",
             line=dict(color="grey"),
             showlegend=False,
+            hovertemplate=(
+                "Datetime: %{x|%Y-%m-%d %H:%M:%S}<br>"
+                "Body temperature: %{y}<br>"
+                "<extra></extra>"
+            )
         )
     )
 
     for event_name, color in color_code().items():
         event_tmp = peaks["tmp"][event_name].values()
         event_time = peaks["time"][event_name].values()
-        for tmp, time in zip(event_tmp, event_time):
+        event_name_set_flag = True
+        for i, (tmp, time) in enumerate(zip(event_tmp, event_time)):
             fig.add_trace(
                 go.Scatter(
                     x=time,
                     y=tmp,
                     mode="lines",
                     line=dict(color=color),
-                    showlegend=False,
+                    showlegend=event_name_set_flag,
+                    name=event_name if event_name_set_flag else None,
+                    hovertemplate=(
+                        "Datetime: %{x|%Y-%m-%d %H:%M:%S}<br>"
+                        "Body temp: %{y}<br>"
+                        f"{event_name}: {i+1}<br>"
+                        "<extra></extra>"
+                    )
                 )
             )
+            event_name_set_flag = False
+
     fig.update_layout(
+        legend=dict(
+            orientation="h",
+            x=0.5,
+            xanchor="center",
+            y=1.0,
+            yanchor="bottom"
+        ),
         xaxis_title="Datetime",
         xaxis=dict(showgrid=False),
         yaxis_title="body_tmp",
