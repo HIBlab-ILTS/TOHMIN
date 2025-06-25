@@ -113,20 +113,23 @@ def input_csv():
 def preview_params():
     files = session.get("files", [])
     params = filer.save_files(request.files.getlist("params_csv"), "PARAMS")
-    headers, tables = filer.preview_params(params[0], session["attrs"])
-    if isinstance(tables, list):
-        return render_template(
-            "params_upload.html",
-            files=files,
-            table=tables,
-            header=headers
-        )
-    else:
-        return render_template(
-            "params_upload.html",
-            files=files,
-            msg=tables
-        )
+    try:
+        headers, tables = filer.preview_params(params[0], session["attrs"])
+        if isinstance(tables, list):
+            return render_template(
+                "params_upload.html",
+                files=files,
+                table=tables,
+                header=headers
+            )
+        else:
+            return render_template(
+                "params_upload.html",
+                files=files,
+                msg=tables
+            )
+    except:
+        return render_template("errors.html")
 
 
 # Analyze data page
