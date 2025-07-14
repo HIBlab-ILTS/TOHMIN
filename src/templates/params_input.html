@@ -145,6 +145,15 @@
         </div>
       </div>
       <div class="col-mb-3 p-1">
+        <label for="refractoryness_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Duration threshold for confirming refractoryness.">
+          Refractoryness Discrimination [min]<span class="text-danger">*</span>
+        </label>
+        <input class="form-control" type="number" id="refractoryness_discrimination" name="param" value="60" min={{interval}} max="360" required>
+        <div class="invalid-feedback">
+          Enter numbers only.
+        </div>
+      </div>
+      <div class="col-mb-3 p-1">
         <label for="pa_discrimination" class="form-label" data-toggle="tooltip" data-placement="right" title="Time threshold for reclassifying short-term low Tb events as periodic arousal.">
           PA Discrimination [min]<span class="text-danger">*</span>
         </label>

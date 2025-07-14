@@ -441,7 +441,8 @@ def pick_up_parameter(files: list, params: list) -> dict:
         "hib_start_discrimination": params[10],
         "hib_end_discrimination": params[11],
         "dead_discrimination": params[12],
-        "pa_discrimination": params[13],
+        "refractoryness_discrimination": params[13],
+        "pa_discrimination": params[14],
         "exclusion_start_time": np.nan if params[4] == '' else params[4],
         "exclusion_end_time": np.nan if params[5] == '' else params[5]
     }
@@ -474,6 +475,7 @@ def read_parameters() -> dict:
         "hib_start_discrimination",
         "hib_end_discrimination",
         "dead_discrimination",
+        "refractoryness_discrimination",
     ]
     for col in no_nan_columns:
         if df[col].isna().any():
@@ -588,6 +590,7 @@ def validate_values(param_df: pd.DataFrame, headers: set, attr: dict) -> None:
             ('hib_start_discrimination', 7200),
             ('hib_end_discrimination', 43200),
             ('dead_discrimination', 43200),
+            ('refractoryness_discrimination', 360),
             ('pa_discrimination', 360)
         ]:
             if not min <= int(check_df[col].iloc[0]) <= max:
@@ -619,6 +622,7 @@ def preview_params(file_name: str, attrs: dict) -> tuple:
         'hib_start_discrimination',
         'hib_end_discrimination',
         'dead_discrimination',
+        'refractoryness_discrimination',
         'pa_discrimination',
         'exclusion_start_time',
         'exclusion_end_time'

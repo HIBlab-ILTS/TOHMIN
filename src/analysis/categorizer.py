@@ -37,6 +37,7 @@ def _data_set(params: dict) -> dict:
         "hib_start_discrimination": np.int32(params["hib_start_discrimination"]),
         "hib_end_discrimination": np.int32(params["hib_end_discrimination"]),
         "dead_discrimination": np.int32(params["dead_discrimination"]),
+        "refractoryness_discrimination": np.int32(params["refractoryness_discrimination"]),
         "pa_discrimination": np.int32(params["pa_discrimination"]),
         "exclusion_start_time": exclusion_start_time,
         "exclusion_end_time": exclusion_end_time,
@@ -186,7 +187,7 @@ def _is_hib_end(
     )
     count = 0
     for i in range(index):
-        if count != interval:
+        if count != params["refractoryness_discrimination"]:
             if (
                 params["lower_threshold"]
                 <= tmp[current_index + i]
