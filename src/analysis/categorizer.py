@@ -56,8 +56,8 @@ def _structured() -> dict:
         "status": "",
         "tmp": {
             "prehib": {},
-            "hib_start": "",
-            "hib_end": "",
+            "hib_start": None,
+            "hib_end": None,
             "PA": {},
             "ST": {},
             "DT": {},
@@ -69,8 +69,8 @@ def _structured() -> dict:
         },
         "time": {
             "prehib": {},
-            "hib_start": "",
-            "hib_end": "",
+            "hib_start": None,
+            "hib_end": None,
             "PA": {},
             "ST": {},
             "DT": {},
@@ -281,11 +281,20 @@ def _get_dead_index(tmp: list, current_index: int, dead_descrimination: int) -> 
         int: The index of the data point where death is determined to have occurred.
     """
     dead_tmp = None
-    for i in range(dead_descrimination):
+    dead_idx = 0
+
+    max_iterations = min(dead_descrimination, len(tmp) - current_index)
+    # 範囲が0以下の場合は0を返す
+    if max_iterations <= 0:
+        return 0
+
+    for i in range(max_iterations):
         # 期間内で微妙な体温変動が発生し、目的の値より後ろの値が取得される可能性があるため小数点第一位を四捨五入した値にする
         target_tmp = round(tmp[current_index + i], 1)
         if dead_tmp is None or dead_tmp > target_tmp:
+            dead_tmp = target_tmp
             dead_idx = i
+    
     return dead_idx
 
 
@@ -375,7 +384,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
             results["time"]["hib_end"] = time[i]
             break
         # For Post-Hibernation
-        elif results["time"]["hib_end"] != "" and results["time"]["hib_end"] != time[-1]:
+        elif results["time"]["hib_end"] is not None and results["time"]["hib_end"] != time[-1]:
             range_index = (
                 interval["minutes"] * 24 * 7
                 if interval["minutes"] * 24 * 7 <= len(time)
@@ -387,7 +396,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                 _append_proc("posthib", results, process_tmp, process_time)
             break
         # For Pre-Hibernation
-        elif results["time"]["hib_start"] == "":
+        elif results["time"]["hib_start"] is None:
             process_tmp.append(tmp[i])
             process_time.append(time[i])
 
@@ -410,10 +419,10 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                     results["status"] = "Unhibernation"
                     break
         elif (
-            results["time"]["hib_start"] != ""
+            results["time"]["hib_start"] is not None
             and params["lower_threshold"] <= tmp[i] < params["upper_threshold"]
         ):
-            if results["time"]["hib_end"] == "" and (
+            if results["time"]["hib_end"] is None and (
                 params["lower_threshold"] > tmp[i - 1]
                 or params["upper_threshold"] <= tmp[i - 1]
             ):
@@ -427,7 +436,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
             process_time.append(time[i])
         elif tmp[i] < params["lower_threshold"]:
             # Check whether dead
-            if results["time"]["hib_end"] == "" and _is_dead(tmp, i, params):
+            if results["time"]["hib_end"] is None and _is_dead(tmp, i, params):
                 dead_idx = _get_dead_index(tmp, i, params["dead_discrimination"])
 
                 results["tmp"]["hib_end"] = tmp[i - 1]
@@ -457,7 +466,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                 _append_proc("DT", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
                 previous_tmp = tmp[i]
-        elif results["time"]["hib_start"] != "" and tmp[i] >= params["upper_threshold"]:
+        elif results["time"]["hib_start"] is not None and tmp[i] >= params["upper_threshold"]:
             # For Shallow Torpor
             if previous_tmp >= params["upper_threshold"]:
                 _append_proc("ST", results, process_tmp, process_time)
@@ -469,7 +478,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                 process_tmp, process_time = [], []
                 previous_tmp = tmp[i - 1]
             # Check wether the hibernation is over
-            if results["time"]["hib_end"] == "" and _is_hib_end(
+            if results["time"]["hib_end"] is None and _is_hib_end(
                 tmp, i, interval["minutes"], params
             ):
                 results["tmp"]["hib_end"] = tmp[i - 1]

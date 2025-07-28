@@ -316,42 +316,62 @@ def save_artifacts(folder_path: str, file: str, results: dict) -> None:
         else:
             for e_name, e_info in results["time"].items():
                 if e_name == "hib_start":
-                    delta_time = results["time"]["hib_end"] - results["time"][e_name]
-                    time, unit = str(delta_time).split(" ")
-                    w.writerow(
-                        [
-                            id_name,
-                            "hibernation",
-                            "1",
-                            results["time"][e_name],
-                            results["time"]["hib_end"],
-                            time,
-                            unit,
-                            group,
-                        ]
-                    )
-                elif e_name not in ["hib_end", "posthib"]:
+                    hib_start = results["time"]["hib_start"]
+                    hib_end = results["time"]["hib_end"]
+
+                    if (hib_start is not None and hib_end is not None and 
+                        hasattr(hib_start, '__sub__') and hasattr(hib_end, '__sub__')):
+                        try:
+                            delta_time = hib_end - hib_start
+                            time_str, unit = str(delta_time).split(" ")
+                            w.writerow(
+                                [
+                                    id_name,
+                                    "hibernation",
+                                    "1",
+                                    hib_start,
+                                    hib_end,
+                                    time_str,
+                                    unit,
+                                    group,
+                                ]
+                            )
+                        except Exception as e:
+                            print(f"Error calculating hibernation duration: {e}")
+                            print(f"hib_start type: {type(hib_start)}, value: {hib_start}")
+                            print(f"hib_end type: {type(hib_end)}, value: {hib_end}")
+                    else:
+                        print(f"Skipping hibernation duration calculation - invalid data types:")
+                        print(f"hib_start: {type(hib_start)} = {hib_start}")
+                        print(f"hib_end: {type(hib_end)} = {hib_end}")
+                
+                # その他のイベント
+                elif e_name not in ["hib_start", "hib_end", "posthib"] and isinstance(e_info, dict):
                     for e_num, e_data in e_info.items():
-                        delta_time = (
-                            e_data[-1] - e_data[0]
-                            if len(e_data) != 1
-                            else results["interval"]["with_seconds"]
-                        )
-                        time, unit = str(delta_time).split(" ")
-                        if e_name == "prehib":
-                            e_name = "pre_hibernation"
-                        w.writerow(
-                            [
-                                id_name,
-                                e_name,
-                                e_num,
-                                e_data[0],
-                                e_data[-1],
-                                time,
-                                unit,
-                                group,
-                            ]
-                        )
+                        if len(e_data) > 0:  # 空のデータをチェック
+                            try:
+                                delta_time = (
+                                    e_data[-1] - e_data[0]
+                                    if len(e_data) != 1
+                                    else results["interval"]["with_seconds"]
+                                )
+                                time_str, unit = str(delta_time).split(" ")
+                                display_name = "pre_hibernation" if e_name == "prehib" else e_name
+                                w.writerow(
+                                    [
+                                        id_name,
+                                        display_name,
+                                        e_num,
+                                        e_data[0],
+                                        e_data[-1],
+                                        time_str,
+                                        unit,
+                                        group,
+                                    ]
+                                )
+                            except Exception as e:
+                                print(f"Error processing {e_name} event {e_num}: {e}")
+                                
     print(f"Successfully. 'hib_analysis_{id_name}.csv' was created.")
 
     # for process_data
@@ -364,10 +384,11 @@ def save_artifacts(folder_path: str, file: str, results: dict) -> None:
         for e_name, e_info in results["time"].items():
             if e_name not in ["hib_start", "hib_end", "prehib", "posthib"]:
                 for e_num in e_info.keys():
-                    for e_time, e_tmp in zip(
-                        results["time"][e_name][e_num], results["tmp"][e_name][e_num]
-                    ):
-                        w.writerow([id_name, e_name, e_num, e_time, e_tmp, group])
+                    if e_num in results["tmp"][e_name]:
+                        for e_time, e_tmp in zip(
+                            results["time"][e_name][e_num], results["tmp"][e_name][e_num]
+                        ):
+                            w.writerow([id_name, e_name, e_num, e_time, e_tmp, group])
     print(f"Successfully. 'hib_proc_{id_name}.csv' was created.")
 
 
