@@ -148,7 +148,20 @@ def data_format(files: list) -> tuple:
                 df = pd.read_csv(file_path, header=header_index, encoding="Shift-JIS")
             if df.isnull().values.sum() != 0:
                 print("DataError: Founded NaN data")
+                df = df.dropna()
+                print(f"Removed Nan values. Remaining rows: {len(df)}")
             df["Date/Time"] = df["Date/Time"].apply(adjust_year).astype("datetime64[s]")
+            
+            if 'Value' in df.columns:
+                # string > num
+                df['Value'] = pd.to_numeric(df['Value'], errors='coerce')
+                # delete
+                if df['Value'].isnull().sum() > 0:
+                    print(f"Warnig: {df['Value'].isnull().sum()} non-numeric values in Value column and will be removed")
+                    df = df.dropna(subset=['Value'])
+            # reset index
+            df = df.reset_index(drop=True)
+
             data[file] = df
         except pd.errors.ParserError as e:
             print(traceback.format_exc())

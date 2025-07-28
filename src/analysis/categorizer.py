@@ -345,10 +345,13 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
         "ID": params["id"],
         "group": params["group"],
     }
+    
+    tmp = np.array(tmp, dtype=np.float64)
 
     # For Non-Hibernation 
-    if np.all(tmp[~np.isnan(tmp)] > params["hib_start_tmp"]):
-        _append_proc("prehib", results, tmp, time)
+    valid_tmp = tmp[~np.isnan(tmp)]
+    if len(valid_tmp) > 0 and np.all(valid_tmp > params["hib_start_tmp"]):
+        _append_proc("prehib", results, tmp.tolist(), time)
         results["status"] = "Unhibernation"
         return results
 
@@ -449,12 +452,12 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                 results["status"] = "Dead"
                 break
             # For Cooling
-            elif previous_tmp >= params["upper_threshold"]:
+            elif previous_tmp is not None and previous_tmp >= params["upper_threshold"]:
                 _append_proc("Cooling", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
                 previous_tmp = tmp[i - 1]
             # For Arousal Pending
-            elif previous_tmp < params["lower_threshold"]:
+            elif previous_tmp is not None and previous_tmp < params["lower_threshold"]:
                 _append_proc("Arousal Pending", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
                 previous_tmp = tmp[i - 1]
@@ -462,18 +465,18 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
             process_tmp.append(tmp[i])
             process_time.append(time[i])
             # For Deep torpor
-            if tmp[i + 1] >= params["lower_threshold"]:
+            if i + 1 < len(tmp) and tmp[i + 1] >= params["lower_threshold"]:
                 _append_proc("DT", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
                 previous_tmp = tmp[i]
         elif results["time"]["hib_start"] is not None and tmp[i] >= params["upper_threshold"]:
             # For Shallow Torpor
-            if previous_tmp >= params["upper_threshold"]:
+            if previous_tmp is not None and previous_tmp >= params["upper_threshold"]:
                 _append_proc("ST", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
                 previous_tmp = tmp[i - 1]
             # For Rewarming
-            elif previous_tmp < params["lower_threshold"]:
+            elif previous_tmp is not None and previous_tmp < params["lower_threshold"]:
                 _append_proc("Rewarming", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
                 previous_tmp = tmp[i - 1]
@@ -490,7 +493,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
             process_time.append(time[i])
 
             # For Periodic Arousal
-            if tmp[i + 1] < params["upper_threshold"]:
+            if i + 1 < len(tmp) and tmp[i + 1] < params["upper_threshold"]:
                 _append_proc("PA", results, process_tmp, process_time)
                 process_tmp, process_time = [], []
                 previous_tmp = tmp[i]
@@ -572,6 +575,9 @@ def get_low_tb_events(results: dict, prehib_low_Tb_threshold: int) -> dict:
         dict: The dictionary storing the analysis results.
     """
     process_tmp, process_time = [], []
+    if 1 not in results["tmp"]["prehib"] or 1 not in results["time"]["prehib"]:
+        return results
+
     tmp = results["tmp"]["prehib"][1]
     time = results["time"]["prehib"][1]
     for i in range(len(tmp) - 1):
