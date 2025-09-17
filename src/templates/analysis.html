@@ -8,6 +8,11 @@
     You can download analysis results for individual files using the download buttons next to each filename, or download analysis results for all files using the download button at the bottom of the page.
   </p>
 </div>
+{% if scale_info %}
+<div class="alert alert-info">
+  <strong>Chart Scale:</strong> {{ scale_info }}
+</div>
+{% endif %}
 <div class="card text-bg-light p-4 mt-3">
   <form method="POST" action="/delete">
     {% for file_name, peak_set in summary.items() %}
@@ -22,7 +27,7 @@
         </div>
       </div>
       <hr>
-      <div class="mb-3">
+      <div class="mb-3 plot-container">
         {{ divs[file_name] | safe }}
       </div>
       <div class="table-responsive">

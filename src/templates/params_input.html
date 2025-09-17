@@ -168,9 +168,54 @@
       {{msg}}
     </div>
     {% endif %}
+    <div class="card mt-4">
+      <div class="card-header">
+          <h5>Y-axis Scale Settings for Charts</h5>
+      </div>
+      <div class="card-body">
+          <div class="row">
+              <div class="col-md-6">
+                  <label for="scale_mode" class="form-label">Scale Mode:</label>
+                  <select class="form-select" id="scale_mode" name="scale_mode" onchange="toggleCustomRange()">
+                      <option value="auto">Auto Scale (Individual)</option>
+                      <option value="unified" selected>Unified Scale (All files)</option>
+                      <option value="custom">Custom Range</option>
+                  </select>
+              </div>
+              <div class="col-md-6" id="custom_range_section" style="display: none;">
+                  <label class="form-label">Custom Temperature Range (ºC):</label>
+                  <div class="row">
+                      <div class="col-6">
+                          <input type="number" class="form-control" id="y_min" name="y_min" 
+                                 placeholder="Min" step="0.1" value="0">
+                      </div>
+                      <div class="col-6">
+                          <input type="number" class="form-control" id="y_max" name="y_max" 
+                                 placeholder="Max" step="0.1" value="40">
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
     <div class="col-sm-12 text-center">
       <button class="btn btn-secondary" id="needLoading">Send</button>
     </div>
   </form>
 </div>
+
+<script>
+  function toggleCustomRange() {
+      const scaleMode = document.getElementById('scale_mode').value;
+      const customSection = document.getElementById('custom_range_section');
+      customSection.style.display = scaleMode === 'custom' ? 'block' : 'none';
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+      {% if suggested_range %}
+      document.getElementById('y_min').value = {{ suggested_range.min }};
+      document.getElementById('y_max').value = {{ suggested_range.max }};
+      {% endif %}
+  });
+  </script>
 {% endblock %}

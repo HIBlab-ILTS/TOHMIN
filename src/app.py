@@ -39,11 +39,18 @@ def uploads_page():
 @app.route("/visualization", methods=["POST"])
 def visualization():
     try:
+        filer.cleanup_old_artifacts(keep_latest=3)
         files = filer.save_files(request.files.getlist("data_csv"), "DATA")
         session["files"] = files
         # create data format from the file
         data, errors = filer.data_format(files)
         session['attrs'] = filer.get_min_attr(data)
+        y_min, y_max = filer.calculate_optimal_y_range(data)
+        session['suggested_y_range'] = {
+            'min': round(y_min, 1),
+            'max': round(y_max, 1)
+        }
+
         if len(set(session["attrs"].values())) == 1:
             action_route = "/parameter_input"
         else:
@@ -58,7 +65,8 @@ def visualization():
             "visualization.html",
             figures=session.get("figures", {}),
             errors=errors,
-            action_route=action_route
+            action_route=action_route,
+            suggested_range=session.get('suggested_y_range', {'min': 0, 'max': 40})
         )
     except (FileNotFoundError, IsADirectoryError):
         return render_template(
@@ -140,6 +148,27 @@ def analysis():
     session["folder_name"], folder_path = filer.create_unique_dir(
         request.form.get("folder_name")
     )
+    
+    # Get the Y-axis scale setting
+    scale_mode = request.form.get("scale_mode", "unified")
+    y_range = None
+    
+    if scale_mode == "custom":
+        try:
+            y_min = float(request.form.get("y_min", 0))
+            y_max = float(request.form.get("y_max", 40))
+            if y_min >= y_max:
+                raise ValueError("Invalid range")
+            y_range = (y_min, y_max)
+        except (ValueError, TypeError):
+            scale_mode = "unified"
+            y_range = None
+
+    if scale_mode == "unified" and y_range is None:
+        # 全データから統一範囲を計算
+        y_min, y_max = filer.calculate_optimal_y_range(data)
+        y_range = (y_min, y_max)
+
     try:
         if request.form.getlist("param"):
             parameters_dict = filer.pick_up_parameter(
@@ -148,19 +177,43 @@ def analysis():
             )
         else:
             parameters_dict = filer.read_parameters()
+        
         event_set, div_set = {}, {}
+        
+        # First save the raw data plot at a uniform scale
+        if scale_mode != "auto":
+            filer.save_figures_with_scale(data, y_range, scale_mode)
+        else:
+            filer.save_figures(data)
+        
         for file in files:
             if file in parameters_dict.keys():
                 peaks = categorizer.analyze(parameters_dict[file], data[file])
                 filer.save_artifacts(folder_path, file, peaks)
-                div_set |= filer.plot_coloring_events(
+                
+                # Event color-coded diagrams can also be generated with scale control
+                div_set |= filer.plot_coloring_events_with_scale(
                     file,
                     folder_path,
                     data[file],
-                    peaks
+                    peaks,
+                    y_range,
+                    scale_mode
                 )
                 event_set |= {file: filer.output(peaks)}
-        return render_template("analysis.html", divs=div_set, summary=event_set)
+        
+        session['scale_settings'] = {
+            'mode': scale_mode,
+            'range': y_range
+        }
+        
+        return render_template(
+            "analysis.html", 
+            divs=div_set, 
+            summary=event_set,
+            scale_info=f"Charts generated with {scale_mode} scale" + 
+                      (f" ({y_range[0]}°C to {y_range[1]}°C)" if y_range else "")
+        )
     except (AttributeError, TypeError):
         print(traceback.format_exc())
         return render_template(

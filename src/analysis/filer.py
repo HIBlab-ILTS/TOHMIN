@@ -11,8 +11,7 @@ import zipfile
 import glob
 import plotly.graph_objects as go
 
-from setting import DATA_DIR_PATH, PARAMS_DIR_PATH, FIGS_DIR_PATH, ARTIFACTS_DIR_PATH
-
+from setting import DATA_DIR_PATH, PARAMS_DIR_PATH, FIGS_DIR_PATH, ARTIFACTS_DIR_PATH, TRASH_DIR_PATH
 
 def mkdirs():
     """
@@ -546,22 +545,44 @@ def save_figures(data_list: list) -> None:
             go.Scatter(
                 x=data["Date/Time"],
                 y=data["Value"],
-                mode="lines"
+                mode="lines",
+                line=dict(color="black", width=1.5)
             )
         )
         fig.update_layout(
-            xaxis_title="Datetime",
-            xaxis=dict(showgrid=False),
-            yaxis_title="body_tmp",
-            yaxis=dict(showgrid=False)
+            plot_bgcolor="rgba(245, 245, 245, 1)",
+            paper_bgcolor="white",
+            xaxis_title="Time",
+            yaxis_title="Body Temperature (°C)",
+            xaxis=dict(
+                showgrid=False,
+                showline=True,
+                linewidth=2,
+                linecolor="black",
+                tickfont=dict(size=14, color="black"),
+                titlefont=dict(size=16, color="black")
+            ),
+            yaxis=dict(
+                showgrid=False,
+                showline=True,
+                linewidth=2,
+                linecolor="black",
+                tickfont=dict(size=14, color="black"),
+                titlefont=dict(size=16, color="black")
+            ),
+            font=dict(size=14, color="black"),
+            width=800,
+            height=500,
+            margin=dict(l=80, r=50, t=50, b=80)
         )
         fig.write_image(
-            os.path.join(FIGS_DIR_PATH, f"{file_name.replace('.csv', '.svg')}")
+            os.path.join(FIGS_DIR_PATH, f"{file_name.replace('.csv', '.svg')}"),
+            width=800, height=500
         )
         fig.write_image(
-            os.path.join(FIGS_DIR_PATH, f"{file_name.replace('.csv', '_full.svg')}")
+            os.path.join(FIGS_DIR_PATH, f"{file_name.replace('.csv', '_full.svg')}"),
+            width=800, height=500
         )
-
 
 def fig_list(files: list) -> dict:
     """
@@ -687,7 +708,7 @@ def color_code() -> dict:
         and corresponding color codes as values.
     """
     return {
-        "ST": "khaki",
+        "ST": "darkorange",
         "Rewarming": "lightcoral",
         "PA": "lightblue",
         "Cooling": "darkgreen",
@@ -697,30 +718,22 @@ def color_code() -> dict:
     }
 
 
-def plot_coloring_events(
+def plot_coloring_events_with_scale(
         file_name: str,
         folder_path: str,
         df: pd.DataFrame,
-        peaks: dict) -> dict:
-    """
-    Generates a graph with color-coded hibernation events and saves it
-    as an SVG and HTML file.
-
-    Args:
-        file_name (str): The filename of the CSV file.
-        folder_path (str): The path to the folder where the files will be saved.
-        df (pd.DataFrame): A DataFrame containing the raw temperature data.
-        peaks (dict): A dictionary containing peak temperatures and times.
-    Returns:
-        dict: A dictionary containing the HTML file paths.
-    """
+        peaks: dict,
+        y_range: tuple = None,
+        scale_mode: str = "auto") -> dict:
+    """Control the Y-axis scale to generate an event color-coded chart"""
     dir_path = os.path.join(folder_path, file_name.replace(".csv", ""))
+    
     fig = go.Figure(
         go.Scatter(
             x=df["Date/Time"],
             y=df["Value"],
             mode="lines",
-            line=dict(color="grey"),
+            line=dict(color="darkgray", width=1.5),
             showlegend=False,
             hovertemplate=(
                 "Datetime: %{x|%Y-%m-%d %H:%M:%S}<br>"
@@ -740,7 +753,7 @@ def plot_coloring_events(
                     x=time,
                     y=tmp,
                     mode="lines",
-                    line=dict(color=color),
+                    line=dict(color=color, width=2.5),
                     showlegend=event_name_set_flag,
                     name=event_name if event_name_set_flag else None,
                     hovertemplate=(
@@ -753,35 +766,191 @@ def plot_coloring_events(
             )
             event_name_set_flag = False
 
-    fig.update_layout(
-        legend=dict(
-            orientation="h",
-            x=0.5,
-            xanchor="center",
-            y=1.0,
-            yanchor="bottom"
-        ),
-        xaxis_title="Datetime",
-        xaxis=dict(showgrid=False),
-        yaxis_title="body_tmp",
-        yaxis=dict(showgrid=False)
+    # Set the Y-axis range
+    yaxis_config = dict(
+        showgrid=False,
+        showline=True,
+        linewidth=2,
+        linecolor="black",
+        tickfont=dict(size=14, color="black"),
+        titlefont=dict(size=16, color="black")
     )
+    if (scale_mode == "custom" or scale_mode == "unified") and y_range is not None:
+        yaxis_config['range'] = list(y_range)
+
+    fig.update_layout(
+    plot_bgcolor="rgba(248, 248, 248, 1)",
+    paper_bgcolor="white",
+    legend=dict(
+        orientation="h",
+        x=0.5,
+        xanchor="center",
+        y=1.02,
+        yanchor="bottom",
+        font=dict(size=12, color="black"),
+        bgcolor="rgba(255,255,255,0.9)",
+        bordercolor="black",
+        borderwidth=1
+    ),
+    xaxis_title="Time",
+    yaxis_title="Body Temperature (°C)",
+    xaxis=dict(
+        showgrid=False,
+        showline=True,
+        linewidth=2,
+        linecolor="black",
+        tickfont=dict(size=14, color="black"),
+        titlefont=dict(size=16, color="black")
+    ),
+    yaxis=yaxis_config,
+    font=dict(size=14, color="black"),
+    autosize=True,
+    margin=dict(l=80, r=50, t=80, b=80)
+)
+
+    if scale_mode == "custom" and y_range:
+        file_suffix = f"_custom_{int(y_range[0])}to{int(y_range[1])}"
+    elif scale_mode == "unified":
+        file_suffix = "_unified"
+    else:  # "auto"
+        file_suffix = "_auto"
 
     fig.write_image(
-        os.path.join(dir_path, f"{file_name.replace('.csv', '.svg')}"),
+        os.path.join(dir_path, f"{file_name.replace('.csv', '')}{file_suffix}.svg"),
         format="svg",
-        engine="kaleido",
+        width=800, height=500,
     )
-    # need to connect the internet for using interactive data on browser
     fig.write_html(
-        os.path.join(dir_path, f"{file_name.replace('.csv', '.html')}"),
+        os.path.join(dir_path, f"{file_name.replace('.csv', '')}{file_suffix}.html"),
         full_html=False,
         include_plotlyjs="cdn",
+        config={
+            'responsive': True,
+            'displayModeBar': False
+        }
     )
+    fig_responsive = go.Figure(fig.data, fig.layout)
+    fig_responsive.update_layout(
+        autosize=True,
+        width=None,
+        height=None
+    )
+    
     return {
-        file_name: fig.to_html(
+        file_name: fig_responsive.to_html(
             full_html=False,
             include_plotlyjs="cdn",
-            config={'responsive': True}
+            config={
+                'responsive': True,
+                'displayModeBar': False
+            }
         )
     }
+
+def calculate_optimal_y_range(data_dict: dict, buffer_percent: float = 0.1) -> tuple:
+    """auto scale"""
+    all_temps = []
+    for df in data_dict.values():
+        all_temps.extend(df['Value'].dropna().tolist())
+    
+    if not all_temps:
+        return 0, 40
+    
+    min_temp = min(all_temps)
+    max_temp = max(all_temps)
+    temp_range = max_temp - min_temp
+    buffer = temp_range * buffer_percent
+    
+    return min_temp - buffer, max_temp + buffer
+
+def save_figures_with_scale(data_list: dict, y_range: tuple = None, scale_mode: str = "auto") -> None:
+    """Control the Y-axis scale and save the figure"""
+    if scale_mode == "unified":
+        if y_range is None:
+            y_min, y_max = calculate_optimal_y_range(data_list)
+        else:
+            y_min, y_max = y_range
+    elif scale_mode == "custom" and y_range is not None:
+        y_min, y_max = y_range
+
+    else:
+        y_min, y_max = None, None
+    
+    for file_name, data in data_list.items():
+        fig = go.Figure(
+            go.Scatter(
+                x=data["Date/Time"],
+                y=data["Value"],
+                mode="lines",
+                line=dict(color="black", width=1.5)
+            )
+        )
+        
+        yaxis_config = dict(
+            showgrid=False,
+            showline=True,        
+            linewidth=2,          
+            linecolor="black",   
+            tickfont=dict(size=14, color="black"),
+            titlefont=dict(size=16, color="black")
+        )
+        
+        xaxis_config = dict(
+            showgrid=False,
+            showline=True,
+            linewidth=2,
+            linecolor="black",
+            tickfont=dict(size=14, color="black"),
+            titlefont=dict(size=16, color="black")
+        )
+        
+        if y_min is not None and y_max is not None:
+            yaxis_config['range'] = [y_min, y_max]
+        
+        fig.update_layout(
+            plot_bgcolor="rgba(245, 245, 245, 1)",
+            paper_bgcolor="white",
+            xaxis_title="Time",
+            yaxis_title="Body Temperature (°C)",
+            autosize=True,
+            font=dict(size=14, color="black"), 
+            margin=dict(l=80, r=50, t=50, b=80)
+        )
+        
+        if scale_mode == "custom" and y_range:
+            file_suffix = f"_custom_{int(y_range[0])}to{int(y_range[1])}"
+        elif scale_mode == "unified":
+            file_suffix = "_unified"
+        else:  # "auto"
+            file_suffix = "_auto"
+        fig.write_image(
+            os.path.join(FIGS_DIR_PATH, f"{file_name.replace('.csv', '')}{file_suffix}.svg"),
+            width=800, height=500
+        )
+
+def cleanup_old_artifacts(keep_latest=3):
+    """Move all but the most recent N items to the trash"""
+    try:
+        if not os.path.exists(ARTIFACTS_DIR_PATH):
+            return
+            
+        os.makedirs(TRASH_DIR_PATH, exist_ok=True)
+        
+        folders = []
+        for item in os.listdir(ARTIFACTS_DIR_PATH):
+            item_path = os.path.join(ARTIFACTS_DIR_PATH, item)
+            if os.path.isdir(item_path):
+                ctime = os.path.getctime(item_path)
+                folders.append((ctime, item, item_path))
+        
+        folders.sort(reverse=True)
+        for _, folder_name, folder_path in folders[keep_latest:]:
+            import time
+            timestamp = str(int(time.time()))
+            trash_name = f"{folder_name}_{timestamp}"
+            destination = os.path.join(TRASH_DIR_PATH, trash_name)
+            shutil.move(folder_path, destination)
+            print(f"Moved to trash: {folder_name}")
+            
+    except Exception as e:
+        print(f"Cleanup error: {e}")

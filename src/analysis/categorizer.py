@@ -418,7 +418,7 @@ def _peak_counts(tmp: list, time: list, params: dict) -> dict:
                 process_tmp, process_time = [], []
             else:
                 if len(tmp) <= i + params["hib_start_discrimination"]:
-                    _append_proc("prehib", results, tmp, time)
+                    _append_proc("prehib", results, tmp.tolist(), time)
                     results["status"] = "Unhibernation"
                     break
         elif (
