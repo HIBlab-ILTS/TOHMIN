@@ -826,7 +826,9 @@ def plot_coloring_events_with_scale(
         include_plotlyjs="cdn",
         config={
             'responsive': True,
-            'displayModeBar': False
+            'displayModeBar': True,
+            'modeBarButtonsToRemove': [],
+            'displaylogo': False
         }
     )
     fig_responsive = go.Figure(fig.data, fig.layout)
@@ -842,7 +844,7 @@ def plot_coloring_events_with_scale(
             include_plotlyjs="cdn",
             config={
                 'responsive': True,
-                'displayModeBar': False
+                'displayModeBar': True
             }
         )
     }
