@@ -559,16 +559,30 @@ def save_figures(data_list: list) -> None:
                 showline=True,
                 linewidth=2,
                 linecolor="black",
-                tickfont=dict(size=14, color="black"),
-                titlefont=dict(size=16, color="black")
+                tickfont=dict(size=16, color="black"),
+                titlefont=dict(size=18, color="black"),
+                showticklabels=True,
+                tickmode='auto',
+                nticks=8,
+                ticks='outside',
+                ticklen=5,
+                tickwidth=1,
+                tickcolor='black'
             ),
             yaxis=dict(
                 showgrid=False,
                 showline=True,
                 linewidth=2,
                 linecolor="black",
-                tickfont=dict(size=14, color="black"),
-                titlefont=dict(size=16, color="black")
+                tickfont=dict(size=16, color="black"),
+                titlefont=dict(size=18, color="black"),
+                showticklabels=True,
+                tickmode='auto',
+                nticks=6,
+                ticks='outside',
+                ticklen=5,
+                tickwidth=1,
+                tickcolor='black'
             ),
             font=dict(size=14, color="black"),
             width=800,
@@ -772,8 +786,15 @@ def plot_coloring_events_with_scale(
         showline=True,
         linewidth=2,
         linecolor="black",
-        tickfont=dict(size=14, color="black"),
-        titlefont=dict(size=16, color="black")
+        tickfont=dict(size=16, color="black"),
+        titlefont=dict(size=18, color="black"),
+        showticklabels=True,
+        tickmode='auto',
+        nticks=6,
+        ticks='outside',
+        ticklen=5,
+        tickwidth=1,
+        tickcolor='black'
     )
     if (scale_mode == "custom" or scale_mode == "unified") and y_range is not None:
         yaxis_config['range'] = list(y_range)
@@ -799,8 +820,15 @@ def plot_coloring_events_with_scale(
         showline=True,
         linewidth=2,
         linecolor="black",
-        tickfont=dict(size=14, color="black"),
-        titlefont=dict(size=16, color="black")
+        tickfont=dict(size=16, color="black"),
+        titlefont=dict(size=18, color="black"),
+        showticklabels=True,
+        tickmode='auto',
+        nticks=6,
+        ticks='outside',
+        ticklen=5,
+        tickwidth=1,
+        tickcolor='black'
     ),
     yaxis=yaxis_config,
     font=dict(size=14, color="black"),
